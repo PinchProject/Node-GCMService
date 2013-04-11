@@ -130,12 +130,22 @@ sender.send(message.toString(), null, function(err, data) {
 ### Sender class methods
 
 * **`setAPIKey('key')`** : set the api key
-* **`setGCMEndpoint('endpoint')`** : set the GCM endpoint (default: `https://android.googleapis.com`)
-* **`setGCMEndPath('endpath')`** : set the GCM end path (default: `/gcm/send`)
+* **`setGCMEndpoint('endpoint')`** : set the GCM endpoint (default: https://android.googleapis.com)
+* **`setGCMEndPath('endpath')`** : set the GCM end path (default: /gcm/send)
 * **`send(message, retries, callback)`** : send the notification to the registration id(s) with or without retries in JSON or plain-text format and return the response data or an error
 * **`setBackoffDelay(value)`** : set the back-off delay in milliseconds (default: 1000)
 * **`setBackoffFactor(value)`** : set the back-off factor by which the back-off delay should be multiplied per attempt (default: 1.2)
 * **`setMaxAttempts(value)`** : set the max number of retries (default: 10)
+
+## License
+
+Copyright (C) 2013 [http://pinchproject.com/](http://pinchproject.com/)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Change log
 
