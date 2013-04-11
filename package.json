@@ -1,0 +1,15 @@
+{
+    "name": "pp-node-gcm",
+    "version": "0.1.0",
+    "description": "A node.js module for Google Cloud Messaging",
+    "author": "Ismael Gorissen <ismael.gorissen@pinchproject.com>",
+    "keywords": ["gcm", "google", "google cloud messaging", "push", "notification", "android"],
+    "private": true,
+    "dependencies": {
+        "request": "2.16.x"
+    },
+    "main": "./libs/index",
+    "directories": {
+        "lib": "libs"
+    }
+}
