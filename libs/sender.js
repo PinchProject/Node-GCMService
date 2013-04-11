@@ -4,10 +4,12 @@
  * Company: PinchProject
  */
 
-var request = require('request');
+var request = require('request'),
+    attempt = require('attempt');
 
-var INITIAL_BACKOFF_DELAY,
-    MAX_BACKOFF_DELAY;
+var BACKOFF_DELAY = 1000,
+    BACKOFF_FACTOR = 1.2,
+    MAX_ATTEMPTS = 10;
 
 function Sender(data) {
     if (data) {
@@ -46,7 +48,175 @@ function setGCMEndPath(end_path) {
     }
 }
 
+function isSenderOptionsValid(self) {
+    if (self.api_key && typeof self.api_key === 'string') {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function send(message, retries, done) {
+    if (isSenderOptionsValid(this)) {
+        if (message && retries) {
+            sendWithRetry(this, message, retries, function (err, data) {
+                if (!err) {
+                    done(null, data);
+                } else {
+                    done(err);
+                }
+            });
+        } else if (message && !retries) {
+            sendWithoutRetry(this, message, function (err, data) {
+                if (!err) {
+                    done(null, data);
+                } else {
+                    done(err);
+                }
+            });
+        } else {
+            done(new Error('Undefined message parameter'));
+        }
+    } else {
+        done(new Error('Invalid sender options'));
+    }
+}
+
+function sendWithoutRetry(self, message, done) {
+    var options = {
+        url: self.gcm_endpoint + self.gcm_end_path,
+        method: 'POST',
+        headers: {
+            Authorization: 'key=' + self.api_key
+        }
+    };
+
+    switch (typeof message) {
+        case 'string':
+            options['body'] = message;
+            options['headers']['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+            options['headers']['Content-length'] = Buffer.byteLength(message, 'utf8');
+
+            sendRequest(options, done);
+            break;
+        case 'object':
+            options['body'] = JSON.stringify(message);
+            options['headers']['Content-Type'] = 'application/json';
+            options['headers']['Content-length'] = Buffer.byteLength(JSON.stringify(message), 'utf8');
+
+            sendRequest(options, done);
+            break;
+        default:
+            done(new Error('Invalid type for message, must be string or object type.'));
+    }
+}
+
+function sendWithRetry(self, message, retries, done) {
+    if (retries > MAX_ATTEMPTS) {
+        retries = MAX_ATTEMPTS;
+    }
+
+    var options = {
+        url: self.gcm_endpoint + self.gcm_end_path,
+        method: 'POST',
+        headers: {
+            Authorization: 'key=' + self.api_key
+        }
+    };
+
+    switch (typeof message) {
+        case 'string':
+            options['body'] = message;
+            options['headers']['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+            options['headers']['Content-length'] = Buffer.byteLength(message, 'utf8');
+
+            attempt(
+                function () {
+                    sendRequest(options, this);
+                },
+                {
+                    retries: retries,
+                    interval: BACKOFF_DELAY,
+                    factor: BACKOFF_FACTOR
+                },
+                function (err, data) {
+                    if (!err) {
+                        done(null, data);
+                    } else {
+                        done(err);
+                    }
+                }
+            );
+
+            break;
+        case 'object':
+            options['body'] = JSON.stringify(message);
+            options['headers']['Content-Type'] = 'application/json';
+            options['headers']['Content-length'] = Buffer.byteLength(JSON.stringify(message), 'utf8');
+
+            attempt(
+                function () {
+                    sendRequest(options, this);
+                },
+                {
+                    retries: retries,
+                    interval: BACKOFF_DELAY,
+                    factor: BACKOFF_FACTOR
+                },
+                function (err, data) {
+                    if (!err) {
+                        done(null, data);
+                    } else {
+                        done(err);
+                    }
+                }
+            );
+
+            break;
+        default:
+            done(new Error('Invalid type for message, must be string or object type.'));
+    }
+}
+
+function sendRequest(options, done) {
+    request(options, function (err, res, body) {
+        if (!err) {
+            switch (res.statusCode) {
+                case 200:
+                    try {
+                        done(null, JSON.parse(body));
+                    } catch (ex) {
+                        done(ex);
+                    }
+                    break;
+                case 400:
+                    done(new Error('BAD_REQUEST : Request coussld not be parsed as JSON, or it contained invalid fields'));
+                    break;
+                case 401:
+                    done(new Error('UNAUTHORIZED : There was an error authenticating the sender account'));
+                    break;
+                case 500:
+                    done(new Error('INTERNAL_SERVER_ERROR'));
+                    break;
+                case 501:
+                    done(new Error('NOT_IMPLEMENTED : The server either does not recognize the request method, or it lacks the ability to fulfill the request'));
+                    break;
+                case 502:
+                    done(new Error('BAD_GATEWAY : The server was acting as a gateway or proxy and received an invalid response from the upstream server'));
+                    break;
+                case 503:
+                    done(new Error('SERVICE_UNAVAILABLE : The server is currently unavailable (because it is overloaded or down for maintenance)'));
+                    break;
+                case 504:
+                    done(new Error('GATEWAY_TIMEOUT : The server was acting as a gateway or proxy and did not receive a timely response from the upstream server'));
+                    break;
+                default:
+                    done(new Error('INVALID_REQUEST'));
+            }
+        } else {
+            done(err);
+        }
+    });
 }
 
 module.exports = Sender;
