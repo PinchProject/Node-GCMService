@@ -130,7 +130,7 @@ function delayWhileIdleIsValid() {
 }
 
 function timeToLiveIsValid() {
-    if (typeof this.time_to_live === 'number' && this.time_to_live > 0) {
+    if (typeof this.time_to_live === 'number' && this.time_to_live > 0 && this.time_to_live <= 2419200) {
         return true;
     } else {
         return false;
