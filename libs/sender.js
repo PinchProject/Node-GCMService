@@ -27,27 +27,85 @@ Sender.prototype = {
     setAPIKey: setAPIKey,
     setGCMEndpoint: setGCMEndpoint,
     setGCMEndPath: setGCMEndPath,
-    send: send
+    send: send,
+    setBackoffDelay: setBackoffDelay,
+    setBackoffFactor: setBackoffFactor,
+    setMaxAttempts: setMaxAttempts
 };
 
+/**
+ * Set back-off delay.
+ *
+ * @param delay
+ */
+function setBackoffDelay(delay) {
+    if (typeof delay === 'number') {
+        BACKOFF_DELAY = delay;
+    }
+}
+
+/**
+ * Set back-off factor.
+ *
+ * @param factor
+ */
+function setBackoffFactor(factor) {
+    if (typeof factor === 'number') {
+        BACKOFF_FACTOR = factor;
+    }
+}
+
+/**
+ * Set max attempts.
+ *
+ * @param attempts
+ */
+function setMaxAttempts(attempts) {
+    if (typeof  attempts === 'number') {
+        MAX_ATTEMPTS = attempts;
+    }
+}
+
+/**
+ * Set api_key.
+ *
+ * @param key
+ */
 function setAPIKey(key) {
     if (typeof key === 'string') {
         this.api_key = key;
     }
 }
 
+/**
+ * Set gcm_endpoint.
+ *
+ * @param endpoint
+ */
 function setGCMEndpoint(endpoint) {
     if (typeof endpoint === 'string') {
         this.gcm_endpoint = endpoint;
     }
 }
 
+/**
+ * Set gcm_end_path.
+ *
+ * @param end_path
+ */
 function setGCMEndPath(end_path) {
     if (typeof end_path === 'string') {
         this.gcm_end_path = end_path;
     }
 }
 
+/**
+ * Check if the api_key is set and a string, and
+ * return true.
+ *
+ * @param self
+ * @returns {boolean}
+ */
 function isSenderOptionsValid(self) {
     if (self.api_key && typeof self.api_key === 'string') {
         return true;
@@ -56,6 +114,14 @@ function isSenderOptionsValid(self) {
     }
 }
 
+/**
+ * Send the message to the GCM server with or
+ * without retries.
+ *
+ * @param message
+ * @param retries
+ * @param done
+ */
 function send(message, retries, done) {
     if (isSenderOptionsValid(this)) {
         if (message && retries) {
@@ -82,6 +148,14 @@ function send(message, retries, done) {
     }
 }
 
+/**
+ * Send the message to the GCM server without
+ * retries.
+ *
+ * @param self
+ * @param message
+ * @param done
+ */
 function sendWithoutRetry(self, message, done) {
     var options = {
         url: self.gcm_endpoint + self.gcm_end_path,
@@ -111,6 +185,14 @@ function sendWithoutRetry(self, message, done) {
     }
 }
 
+/**
+ * Send the message to the GCM server with retries (max: 10).
+ *
+ * @param self
+ * @param message
+ * @param retries
+ * @param done
+ */
 function sendWithRetry(self, message, retries, done) {
     if (retries > MAX_ATTEMPTS) {
         retries = MAX_ATTEMPTS;
@@ -178,6 +260,13 @@ function sendWithRetry(self, message, retries, done) {
     }
 }
 
+/**
+ * Send a request with the specified options and
+ * return the response.
+ *
+ * @param options
+ * @param done
+ */
 function sendRequest(options, done) {
     request(options, function (err, res, body) {
         if (!err) {

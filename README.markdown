@@ -1,0 +1,144 @@
+# Node-GCMService
+
+A node.js module for **[Google Cloud Messaging](http://developer.android.com/google/gcm/index.html)**
+
+## Installation
+
+```
+[sudo] npm install node-gcm-service
+```
+
+## Requirements
+
+The only thing you need is a google server api key. For more information go to [GCM getting started guide](http://developer.android.com/google/gcm/gs.html).
+
+## Usage
+
+Require the module
+
+```javascript
+var gcm = require('node-gcm-service');
+```
+
+Create a message object with default values and set all variables after, or with another object:
+
+* with default values
+
+```javascript
+var message = new gcm.Message();
+
+// set data with another object
+message.setDataWithObject({
+	key1: 'value1'
+});
+
+// add new key-value to data if key does not exists
+message.addDataWithKeyValue('key2','value2');
+
+// set collapse key
+message.setCollapseKey('string');
+
+// set dry run
+message.setDryRun(false);
+
+// set delay while idle
+message.setDelayWhileIdle(true);
+
+// set registration ids
+message.setRegistrationIds(['id1','id2']);
+
+// add a registration id
+message.addRegistrationId('id3');
+```
+
+* with another object (undefined variables will be set with the default values)
+
+```javascript
+var message = new gcm.Message({
+	registration_ids: ['id1'],
+	collapse_key: 'test',
+	data: {
+		key1: 'value1'
+	},
+	delay_while_idle: true,
+	time_to_live: 34,
+	dry_run: false
+});
+```
+
+Create a sender object with default values and set the api key after, or with another object:
+
+* with default values
+
+```javascript
+var sender = new gcm.Sender();
+
+// set api key
+sender.setAPIKey('key');
+```
+
+* with another object
+
+```javascript
+var sender = new gcm.Sender({
+	key: 'my_api_key'
+});
+```
+
+**Important** : you can set the endpoint and end path URLs if Google change these URLs
+
+And finally send the message to the specified registration id(s) with retries or not, in JSON format or plain-text format :
+
+* with retries in JSON format (max: 10 retries using exponential back-off)
+
+```javascript
+sender.send(message.toJSON(), 6, function(err, data) {
+	if (!err) {
+		// do something
+	} else {
+		// handle error
+	}
+});
+```
+
+* without retries in plain-text format
+
+```javascript
+sender.send(message.toString(), null, function(err, data) {
+	if (!err) {
+		// do something
+	} else {
+		// handle error
+	}
+});
+```
+
+### Message class methods
+
+* **`toJSON()`** : JSON representation of the object
+* **`toString()`** : String representation of the object
+* **`addDataWithKeyValue('key', 'value')`** : add key-value in data object
+* **`setDataWithObject({…})`** : set data object with a new object
+* **`setCollapseKey('key')`** : set the collapse key
+* **`setDryRun(true|false)`** : set dry run
+* **`setRestrictedPackageName('package_name')`** : set restricted package name
+* **`setTimeToLive(12345)`** : set time to live
+* **`setDelayWhileIdle(true|false)`** : set delay while idle
+* **`addRegistrationId('id)`** : add a registration id
+* **`setRegistrationIds([…])`** : set the existing array of registration ids with new array
+
+### Sender class methods
+
+* **`setAPIKey('key')`** : set the api key
+* **`setGCMEndpoint('endpoint')`** : set the GCM endpoint (default: `https://android.googleapis.com`)
+* **`setGCMEndPath('endpath')`** : set the GCM end path (default: `/gcm/send`)
+* **`send(message, retries, callback)`** : send the notification to the registration id(s) with or without retries in JSON or plain-text format and return the response data or an error
+* **`setBackoffDelay(value)`** : set the back-off delay in milliseconds (default: 1000)
+* **`setBackoffFactor(value)`** : set the back-off factor by which the back-off delay should be multiplied per attempt (default: 1.2)
+* **`setMaxAttempts(value)`** : set the max number of retries (default: 10)
+
+## Change log
+
+#### v0.1.0
+
+* first release
