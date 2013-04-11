@@ -27,8 +27,44 @@ Sender.prototype = {
     setAPIKey: setAPIKey,
     setGCMEndpoint: setGCMEndpoint,
     setGCMEndPath: setGCMEndPath,
-    send: send
+    send: send,
+    setBackoffDelay: setBackoffDelay,
+    setBackoffFactor: setBackoffFactor,
+    setMaxAttempts: setMaxAttempts
 };
+
+/**
+ * Set back-off delay.
+ *
+ * @param delay
+ */
+function setBackoffDelay(delay) {
+    if (typeof delay === 'number') {
+        BACKOFF_DELAY = delay;
+    }
+}
+
+/**
+ * Set back-off factor.
+ *
+ * @param factor
+ */
+function setBackoffFactor(factor) {
+    if (typeof factor === 'number') {
+        BACKOFF_FACTOR = factor;
+    }
+}
+
+/**
+ * Set max attempts.
+ *
+ * @param attempts
+ */
+function setMaxAttempts(attempts) {
+    if (typeof  attempts === 'number') {
+        MAX_ATTEMPTS = attempts;
+    }
+}
 
 /**
  * Set api_key.
