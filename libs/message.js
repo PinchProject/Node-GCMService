@@ -27,28 +27,35 @@ function Message(obj) {
 }
 
 Message.prototype = {
-    toJSON:toJSON,
-    toString:toString,
-    addDataWithKeyValue:addDataWithKeyValue,
-    setDataWithObject:setDataWithObject,
-    setCollapseKey:setCollapseKey,
-    setDryRun:setDryRun,
-    setRestrictedPackageName:setRestrictedPackageName,
-    setTimeToLive:setTimeToLive,
-    setDelayWhileIdle:setDelayWhileIdle,
-    addRegistrationId:addRegistrationId,
-    setRegistrationIds:setRegistrationIds,
-    delayWhileIdleIsValid:delayWhileIdleIsValid,
-    timeToLiveIsValid:timeToLiveIsValid,
-    restrictedPackageNameIsValid:restrictedPackageNameIsValid,
-    dryRunIsValid:dryRunIsValid,
-    dataIsValid:dataIsValid,
-    registrationIdsIsValid:registrationIdsIsValid,
-    registrationIdIsValid:registrationIdIsValid,
-    collapseKeyIsValid:collapseKeyIsValid,
-    dataToString:dataToString
+    toJSON: toJSON,
+    toString: toString,
+    addDataWithKeyValue: addDataWithKeyValue,
+    setDataWithObject: setDataWithObject,
+    setCollapseKey: setCollapseKey,
+    setDryRun: setDryRun,
+    setRestrictedPackageName: setRestrictedPackageName,
+    setTimeToLive: setTimeToLive,
+    setDelayWhileIdle: setDelayWhileIdle,
+    addRegistrationId: addRegistrationId,
+    setRegistrationIds: setRegistrationIds,
+    delayWhileIdleIsValid: delayWhileIdleIsValid,
+    timeToLiveIsValid: timeToLiveIsValid,
+    restrictedPackageNameIsValid: restrictedPackageNameIsValid,
+    dryRunIsValid: dryRunIsValid,
+    dataIsValid: dataIsValid,
+    registrationIdsIsValid: registrationIdsIsValid,
+    registrationIdIsValid: registrationIdIsValid,
+    collapseKeyIsValid: collapseKeyIsValid,
+    dataToString: dataToString
 };
 
+/**
+ * Check if the message object is valid for a JSON
+ * request, create an object with the needed
+ * variables and return it.
+ *
+ * @returns {{}}
+ */
 function toJSON() {
     var json = {};
 
@@ -74,6 +81,13 @@ function toJSON() {
     return json;
 }
 
+/**
+ * Check if the message object is valid for a plain-text
+ * request , create a representation of this object
+ * and return it.
+ *
+ * @returns {string}
+ */
 function toString() {
     var string = '';
 
@@ -109,6 +123,12 @@ function toString() {
     return string;
 }
 
+/**
+ * Create a string representation of data object and
+ * return it.
+ *
+ * @returns {string}
+ */
 function dataToString() {
     var data = '&';
 
@@ -121,6 +141,10 @@ function dataToString() {
     return data.slice(0, -1);
 }
 
+/**
+ * Check if delay_while_idle is a boolean and return true.
+ * @returns {boolean}
+ */
 function delayWhileIdleIsValid() {
     if (typeof this.delay_while_idle === 'boolean') {
         return true;
@@ -129,6 +153,13 @@ function delayWhileIdleIsValid() {
     }
 }
 
+/**
+ * Check if time_to_live is a number, is greater than 0 second
+ * and lower or equal than 2 419 200 seconds (4 weeks) and
+ * return true.
+ *
+ * @returns {boolean}
+ */
 function timeToLiveIsValid() {
     if (typeof this.time_to_live === 'number' && this.time_to_live > 0 && this.time_to_live <= 2419200) {
         return true;
@@ -137,6 +168,12 @@ function timeToLiveIsValid() {
     }
 }
 
+/**
+ * Check if restricted_package_name is a string or is not NULL
+ * and return true.
+ *
+ * @returns {boolean}
+ */
 function restrictedPackageNameIsValid() {
     if (typeof this.restricted_package_name === 'string' || !this.restricted_package_name) {
         return true;
@@ -145,6 +182,11 @@ function restrictedPackageNameIsValid() {
     }
 }
 
+/**
+ * Check if dry_run is a boolean and return true.
+ *
+ * @returns {boolean}
+ */
 function dryRunIsValid() {
     if (typeof this.dry_run === 'boolean') {
         return true;
@@ -153,6 +195,12 @@ function dryRunIsValid() {
     }
 }
 
+/**
+ * Check if data is an object and that is length is lower than
+ * 4096 bytes (max 4kb of payload for a notification) and return true.
+ *
+ * @returns {boolean}
+ */
 function dataIsValid() {
     if (Buffer.byteLength(JSON.stringify(this.data)) < 4096 && typeof this.data === 'object') {
         return true;
@@ -161,6 +209,12 @@ function dataIsValid() {
     }
 }
 
+/**
+ * Check if registration_ids is an Array and return true.
+ * Use this function when sending a JSON request.
+ *
+ * @returns {boolean}
+ */
 function registrationIdsIsValid() {
     if (util.isArray(this.registration_ids)) {
         return true;
@@ -169,6 +223,14 @@ function registrationIdsIsValid() {
     }
 }
 
+/**
+ * Check if registration_ids is an Array and have one value and
+ * return true.
+ * Use this function when sending a plain-text request (only
+ * one registration_id).
+ *
+ * @returns {boolean}
+ */
 function registrationIdIsValid() {
     if (util.isArray(this.registration_ids) && this.registration_ids.length == 1) {
         return true;
@@ -177,6 +239,12 @@ function registrationIdIsValid() {
     }
 }
 
+/**
+ * Check if collapse_key is a String or is not NULL and
+ * return true.
+ *
+ * @returns {boolean}
+ */
 function collapseKeyIsValid() {
     if (typeof this.collapse_key === 'string' || !this.collapse_key) {
         return true;
@@ -185,58 +253,89 @@ function collapseKeyIsValid() {
     }
 }
 
+/**
+ * Add new key value.
+ *
+ * @param key
+ * @param value
+ */
 function addDataWithKeyValue(key, value) {
-    this.data[key] = value;
+    if (!this.data[key]) {
+        this.data[key] = value;
+    }
 }
 
+/**
+ * Set data.
+ *
+ * @param obj
+ */
 function setDataWithObject(obj) {
-    if (typeof obj === 'object') {
-        this.data = obj;
-    }
+    this.data = obj;
 }
 
+/**
+ * Set collapse_key.
+ * @param key
+ */
 function setCollapseKey(key) {
-    if (typeof key === 'string') {
-        this.collapse_key = key;
-    }
+    this.collapse_key = key;
 }
 
+/**
+ * Set dry_run.
+ *
+ * @param value
+ */
 function setDryRun(value) {
-    if (typeof value === 'boolean') {
-        this.dry_run = value;
-    }
+    this.dry_run = value;
 }
 
+/**
+ * Set restricted_package_name.
+ *
+ * @param value
+ */
 function setRestrictedPackageName(value) {
-    if (typeof value === 'string') {
-        this.restricted_package_name = value;
-    }
+    this.restricted_package_name = value;
 }
 
+/**
+ * Set time_to_live.
+ *
+ * @param value
+ */
 function setTimeToLive(value) {
-    if (typeof value === 'number') {
-        this.time_to_live = value;
-    }
+    this.time_to_live = value;
 }
 
+/**
+ * Set delay_while_idle.
+ *
+ * @param value
+ */
 function setDelayWhileIdle(value) {
-    if (typeof value === 'boolean') {
-        this.delay_while_idle = value;
-    }
+    this.delay_while_idle = value;
 }
 
+/**
+ * Add a registration id.
+ *
+ * @param id
+ */
 function addRegistrationId(id) {
-    if (typeof id === 'string' && util.isArray(this.registration_ids)) {
-        if (this.registration_ids.indexOf(id) == -1) {
-            this.registration_ids.push(id);
-        }
+    if (this.registration_ids.indexOf(id) == -1) {
+        this.registration_ids.push(id);
     }
 }
 
+/**
+ * Set registration_ids.
+ *
+ * @param ids
+ */
 function setRegistrationIds(ids) {
-    if (util.isArray(ids)) {
-        this.registration_ids = ids;
-    }
+    this.registration_ids = ids;
 }
 
 module.exports = Message;
