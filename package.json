@@ -4,12 +4,19 @@
     "description": "A node.js module for Google Cloud Messaging",
     "author": "Ismael Gorissen <ismael.gorissen@pinchproject.com>",
     "keywords": ["gcm", "google", "google cloud messaging", "push", "notification", "android"],
-    "private": true,
     "dependencies": {
-        "request": "2.16.x"
+        "request": "2.16.x",
+        "attempt": "0.2.x"
     },
     "main": "./libs/index",
     "directories": {
         "lib": "libs"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/PinchProject/Node-GCMService.git"
+    },
+    "bugs": {
+        "url": "https://github.com/PinchProject/Node-GCMService/issues"
     }
 }
