@@ -215,14 +215,18 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Change log
 
+#### v0.1.3
+
+* resolved some issue.
+
 #### v0.1.2
 
-* modified the structure of the GCM response (JSON or plain-text)
+* modified the structure of the GCM response (JSON or plain-text).
 
 #### v0.1.1
 
-* update documentation
+* update documentation.
 
 #### v0.1.0
 
-* first release
+* first release.
