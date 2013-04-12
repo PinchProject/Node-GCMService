@@ -2,6 +2,10 @@
  * Author: Ismael Gorissen
  * Date: 10/04/13 14:02
  * Company: PinchProject
+ * Website: http://pinchproject.com/
+ *
+ * Copyright (C) 2013 PinchProject
+ * MIT Licensed
  */
 
 var util = require('util');
@@ -260,7 +264,7 @@ function collapseKeyIsValid() {
  * @param value
  */
 function addDataWithKeyValue(key, value) {
-    if (!this.data[key]) {
+    if (!this.data.hasOwnProperty(key)) {
         this.data[key] = value;
     }
 }
@@ -271,7 +275,9 @@ function addDataWithKeyValue(key, value) {
  * @param obj
  */
 function setDataWithObject(obj) {
-    this.data = obj;
+    if (typeof obj === 'object' && !util.isArray(obj)) {
+        this.data = obj;
+    }
 }
 
 /**
@@ -279,7 +285,9 @@ function setDataWithObject(obj) {
  * @param key
  */
 function setCollapseKey(key) {
-    this.collapse_key = key;
+    if (typeof key === 'string') {
+        this.collapse_key = key;
+    }
 }
 
 /**
@@ -288,7 +296,9 @@ function setCollapseKey(key) {
  * @param value
  */
 function setDryRun(value) {
-    this.dry_run = value;
+    if (typeof value === 'boolean') {
+        this.dry_run = value;
+    }
 }
 
 /**
@@ -297,7 +307,9 @@ function setDryRun(value) {
  * @param value
  */
 function setRestrictedPackageName(value) {
-    this.restricted_package_name = value;
+    if (typeof value === 'string') {
+        this.restricted_package_name = value;
+    }
 }
 
 /**
@@ -306,7 +318,9 @@ function setRestrictedPackageName(value) {
  * @param value
  */
 function setTimeToLive(value) {
-    this.time_to_live = value;
+    if (typeof value === 'number') {
+        this.time_to_live = value;
+    }
 }
 
 /**
@@ -315,7 +329,9 @@ function setTimeToLive(value) {
  * @param value
  */
 function setDelayWhileIdle(value) {
-    this.delay_while_idle = value;
+    if (typeof value === 'boolean') {
+        this.delay_while_idle = value;
+    }
 }
 
 /**
@@ -324,8 +340,10 @@ function setDelayWhileIdle(value) {
  * @param id
  */
 function addRegistrationId(id) {
-    if (this.registration_ids.indexOf(id) == -1) {
-        this.registration_ids.push(id);
+    if (typeof id === 'string') {
+        if (this.registration_ids.indexOf(id) == -1) {
+            this.registration_ids.push(id);
+        }
     }
 }
 
@@ -335,7 +353,9 @@ function addRegistrationId(id) {
  * @param ids
  */
 function setRegistrationIds(ids) {
-    this.registration_ids = ids;
+    if (util.isArray(ids)) {
+        this.registration_ids = ids;
+    }
 }
 
 module.exports = Message;
