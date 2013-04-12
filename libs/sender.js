@@ -3,10 +3,18 @@
  * Date: 10/04/13 17:59
  * Company: PinchProject
  * Website: http://pinchproject.com/
+ *
+ * Copyright (C) 2013 PinchProject
+ * MIT Licensed
  */
+
+var querystring = require('querystring');
 
 var request = require('request'),
     attempt = require('attempt');
+
+var MulticastResult = require('./MulticastResult.js'),
+    Result = require('./Result.js');
 
 var BACKOFF_DELAY = 1000,
     BACKOFF_FACTOR = 1.2,
@@ -172,14 +180,30 @@ function sendWithoutRetry(self, message, done) {
             options['headers']['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
             options['headers']['Content-length'] = Buffer.byteLength(message, 'utf8');
 
-            sendRequest(options, done);
+            sendRequest(options, function (err, data) {
+                if (!err) {
+                    data = querystring.parse(data, '\n', '=');
+
+                    createResult(querystring.parse(message).registration_id, data, done);
+                } else {
+                    done(err);
+                }
+            });
             break;
         case 'object':
             options['body'] = JSON.stringify(message);
             options['headers']['Content-Type'] = 'application/json';
             options['headers']['Content-length'] = Buffer.byteLength(JSON.stringify(message), 'utf8');
 
-            sendRequest(options, done);
+            sendRequest(options, function (err, data) {
+                if (!err) {
+                    data = JSON.parse(data);
+
+                    createMulticastResult(message.registration_ids, data, done);
+                } else {
+                    done(err);
+                }
+            });
             break;
         default:
             done(new Error('Invalid type for message, must be string or object type.'));
@@ -224,7 +248,9 @@ function sendWithRetry(self, message, retries, done) {
                 },
                 function (err, data) {
                     if (!err) {
-                        done(null, data);
+                        data = querystring.parse(data, '\n', '=');
+
+                        createResult(querystring.parse(message).registration_id, data, done);
                     } else {
                         done(err);
                     }
@@ -248,7 +274,9 @@ function sendWithRetry(self, message, retries, done) {
                 },
                 function (err, data) {
                     if (!err) {
-                        done(null, data);
+                        data = JSON.parse(data);
+
+                        createMulticastResult(message.registration_ids, data, done);
                     } else {
                         done(err);
                     }
@@ -273,14 +301,10 @@ function sendRequest(options, done) {
         if (!err) {
             switch (res.statusCode) {
                 case 200:
-                    try {
-                        done(null, JSON.parse(body));
-                    } catch (ex) {
-                        done(ex);
-                    }
+                    done(null, body);
                     break;
                 case 400:
-                    done(new Error('BAD_REQUEST : Request coussld not be parsed as JSON, or it contained invalid fields'));
+                    done(new Error('BAD_REQUEST : Request could not be parsed as JSON, or it contained invalid fields'));
                     break;
                 case 401:
                     done(new Error('UNAUTHORIZED : There was an error authenticating the sender account'));
@@ -307,6 +331,47 @@ function sendRequest(options, done) {
             done(err);
         }
     });
+}
+
+function createMulticastResult(registration_ids, data, done) {
+    var result = new MulticastResult();
+
+    result.setMulticastId(data.multicast_id);
+    result.setSuccessLength(data.success);
+    result.setFailuresLength(data.failure);
+    result.setCanonicalIdsLength(data.canonical_ids);
+
+    var results = data.results;
+
+    for (var i = 0; i < results.length; i++) {
+        if (results[i].hasOwnProperty('registration_id')) {
+            result.addCanonicalIdObject({
+                message_id: results[i].message_id,
+                registration_id: registration_ids[i],
+                new_registration_id: results[i].registration_id
+            });
+        } else if (results[i].hasOwnProperty('error')) {
+            result.addFailureValueWithKey(results[i].error, registration_ids[i]);
+        }
+    }
+
+    done(null, result.toJSON());
+}
+
+function createResult(registration_id, data, done) {
+    var result = new Result();
+
+    if (data.hasOwnProperty('id')) {
+        result.setId(data.id);
+
+        if (data.hasOwnProperty('registration_id')) {
+            result.setRegistrationId(data.registration_id);
+        }
+    } else if (data.hasOwnProperty('Error')) {
+        result.setError(data.Error);
+    }
+
+    done(null, result.toJSON());
 }
 
 module.exports = Sender;
