@@ -3,6 +3,9 @@
  * Date: 10/04/13 14:02
  * Company: PinchProject
  * Website: http://pinchproject.com/
+ *
+ * Copyright (C) 2013 PinchProject
+ * MIT Licensed
  */
 
 var util = require('util');
