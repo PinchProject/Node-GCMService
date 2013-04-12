@@ -31,6 +31,12 @@ MulticastResult.prototype = {
     setCanonicalIdsLength: setCanonicalIdsLength
 };
 
+/**
+ * Create a multicast result object with useful
+ * information and return it.
+ *
+ * @returns {{}}
+ */
 function toJSON() {
     var json = {};
 
@@ -55,30 +61,56 @@ function toJSON() {
     return json;
 }
 
+/**
+ * Set multicast_id.
+ *
+ * @param id
+ */
 function setMulticastId(id) {
     if (typeof id === 'number') {
         this.multicast_id = id;
     }
 }
 
+/**
+ * Set failures.
+ *
+ * @param obj
+ */
 function setFailures(obj) {
     if (typeof obj === 'object' && !util.isArray(obj)) {
         this.failures = obj;
     }
 }
 
+/**
+ * Set canonical_ids.
+ *
+ * @param obj
+ */
 function setCanonicalIds(obj) {
     if (util.isArray(obj)) {
         this.canonical_ids = obj;
     }
 }
 
+/**
+ * Add new canonical_id object.
+ *
+ * @param obj
+ */
 function addCanonicalIdObject(obj) {
     if (typeof obj === 'object' && !util.isArray(obj)) {
         this.canonical_ids.push(obj);
     }
 }
 
+/**
+ * Add new value to the specified key.
+ *
+ * @param key
+ * @param value
+ */
 function addFailureValueWithKey(key, value) {
     if (typeof value === 'string') {
         if (!this.failures.hasOwnProperty(key)) {
@@ -89,18 +121,33 @@ function addFailureValueWithKey(key, value) {
     }
 }
 
+/**
+ * Set success length.
+ *
+ * @param length
+ */
 function setSuccessLength(length) {
     if (typeof length === 'number') {
         this.success_length = length;
     }
 }
 
+/**
+ * Set failures length.
+ *
+ * @param length
+ */
 function setFailuresLength(length) {
     if (typeof length === 'number') {
         this.failures_length = length;
     }
 }
 
+/**
+ * Set canonical_ids length.
+ *
+ * @param length
+ */
 function setCanonicalIdsLength(length) {
     if (typeof length === 'number') {
         this.canonical_ids_length = length;

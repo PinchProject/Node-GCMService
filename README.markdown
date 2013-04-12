@@ -113,6 +113,70 @@ sender.send(message.toString(), null, function(err, data) {
 });
 ```
 
+### GCM Response
+
+#### Multicast (JSON response)
+
+* GCM response
+
+```javascript
+{
+	"multicast_id": 216,
+	"success": 3,
+	"failure": 3,
+	"canonical_ids": 1,
+	"results": [
+		{ "message_id": "1:0408" },
+		{ "error": "Unavailable" },
+		{ "error": "InvalidRegistration" },
+		{ "message_id": "1:1516" },
+		{ "message_id": "1:2342", "registration_id": "32" },
+		{ "error": "NotRegistered"}
+	]
+}
+```
+
+* module response
+
+```javascript
+{
+	"multicast_id": 216,
+	"success_length": 3,
+	"failures_length": 3,
+	"failures": {
+		"NotRegistered": ["42"],
+		"Unavailable": ["8"],
+		"InvalidRegistration": ["15"]
+	},
+	"canonical_ids_length": 1,
+	"canonical_ids": [
+		{
+			"message_id": "1:2342",
+			"registration_id": "23",
+			"new_registration_id": "32"
+		}
+	]
+}
+```
+
+#### Simple (plain-text response)
+
+* GCM response
+
+```
+id=1:2342
+registration_id=32
+```
+
+* module response
+
+```javascript
+{
+	"id": "1:2342",
+	"registration_id": "32"
+}
+```
+
 ### Message class methods
 
 * **`toJSON()`** : JSON representation of the object
@@ -150,6 +214,14 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Change log
+
+#### v0.1.2
+
+* modified the structure of the GCM response (JSON or plain-text)
+
+#### v0.1.1
+
+* update documentation
 
 #### v0.1.0
 
