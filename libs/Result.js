@@ -21,15 +21,12 @@ Result.prototype = {
     toJSON: toJSON
 };
 
-<<<<<<< HEAD
-=======
 /**
  * Create an result object with useful information
  * and return it.
  *
  * @returns {{}}
  */
->>>>>>> hotfix/v0.1.2
 function toJSON() {
     var json = {};
 
@@ -46,42 +43,33 @@ function toJSON() {
     return json;
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Set id.
  *
  * @param id
  */
->>>>>>> hotfix/v0.1.2
 function setId(id) {
     if (typeof id === 'string') {
         this.id = id;
     }
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Set registration_id.
  *
  * @param id
  */
->>>>>>> hotfix/v0.1.2
 function setRegistrationId(id) {
     if (typeof id === 'string') {
         this.registration_id = id;
     }
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Set error.
  *
  * @param error
  */
->>>>>>> hotfix/v0.1.2
 function setError(error) {
     if (typeof error === 'string') {
         this.error = error;
