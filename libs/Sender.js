@@ -22,9 +22,15 @@ var BACKOFF_DELAY = 1000,
 
 function Sender(data) {
     if (data) {
-        this.api_key = data.key || null;
-        this.gcm_endpoint = data.gcm_endpoint || 'https://android.googleapis.com';
-        this.gcm_end_path = data.gcm_end_path || '/gcm/send';
+
+        data.hasOwnProperty('key') && typeof data.key === 'string' ?
+            this.api_key = data.key : this.api_key = null;
+
+        data.hasOwnProperty('gcm_endpoint') && typeof data.gcm_endpoint === 'string' ?
+            this.gcm_endpoint = data.gcm_endpoint : this.gcm_endpoint = 'https://android.googleapis.com';
+
+        data.hasOwnProperty('gcm_end_path') && typeof data.gcm_end_path === 'string' ?
+            this.gcm_end_path = data.gcm_end_path : this.gcm_end_path = '/gcm/send';
     } else {
         this.api_key = null;
         this.gcm_endpoint = 'https://android.googleapis.com';

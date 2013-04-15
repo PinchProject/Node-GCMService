@@ -55,8 +55,7 @@ Message.prototype = {
     setTimeToLive: setTimeToLive,
     setDelayWhileIdle: setDelayWhileIdle,
     addRegistrationId: addRegistrationId,
-    setRegistrationIds: setRegistrationIds,
-    dataToString: dataToString
+    setRegistrationIds: setRegistrationIds
 };
 
 /**
@@ -108,7 +107,7 @@ function toString() {
         && dataIsValid(this.data) && collapseKeyIsValid(this.collapse_key) && registrationIdIsValid(this.registration_ids)) {
 
         string += 'registration_id=' + this.registration_ids[0];
-        string += this.dataToString(this);
+        string += dataToString(this);
         string += '&time_to_live=' + this.time_to_live;
 
         if (this.dry_run) {
@@ -306,6 +305,9 @@ function addDataWithKeyValue(key, value) {
 function setDataWithObject(obj) {
     if (dataIsValid(obj)) {
         this.data = obj;
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -316,6 +318,9 @@ function setDataWithObject(obj) {
 function setCollapseKey(key) {
     if (typeof key === 'string') {
         this.collapse_key = key;
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -327,6 +332,9 @@ function setCollapseKey(key) {
 function setDryRun(value) {
     if (typeof value === 'boolean') {
         this.dry_run = value;
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -338,6 +346,9 @@ function setDryRun(value) {
 function setRestrictedPackageName(value) {
     if (typeof value === 'string') {
         this.restricted_package_name = value;
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -349,6 +360,9 @@ function setRestrictedPackageName(value) {
 function setTimeToLive(value) {
     if (typeof value === 'number') {
         this.time_to_live = value;
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -360,6 +374,9 @@ function setTimeToLive(value) {
 function setDelayWhileIdle(value) {
     if (typeof value === 'boolean') {
         this.delay_while_idle = value;
+        return true;
+    } else {
+        return false;
     }
 }
 
