@@ -339,8 +339,6 @@ function sendRequest(options, done) {
     });
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Create a multicast result object and send it back as response.
  *
@@ -348,7 +346,6 @@ function sendRequest(options, done) {
  * @param data
  * @param done
  */
->>>>>>> hotfix/v0.1.2
 function createMulticastResult(registration_ids, data, done) {
     var result = new MulticastResult();
 
@@ -374,8 +371,6 @@ function createMulticastResult(registration_ids, data, done) {
     done(null, result.toJSON());
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Create a result object and send it back as response.
  *
@@ -383,7 +378,6 @@ function createMulticastResult(registration_ids, data, done) {
  * @param data
  * @param done
  */
->>>>>>> hotfix/v0.1.2
 function createResult(registration_id, data, done) {
     var result = new Result();
 
