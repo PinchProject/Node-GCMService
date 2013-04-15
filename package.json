@@ -1,6 +1,6 @@
 {
     "name": "node-gcm-service",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "A node.js module for Google Cloud Messaging",
     "author": "Ismael Gorissen <ismael.gorissen@pinchproject.com>",
     "keywords": ["gcm", "google", "google cloud messaging", "push", "notification", "android"],
