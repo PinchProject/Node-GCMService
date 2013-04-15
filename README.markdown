@@ -181,15 +181,15 @@ registration_id=32
 
 * **`toJSON()`** : JSON representation of the object
 * **`toString()`** : String representation of the object
-* **`addDataWithKeyValue('key', 'value')`** : add key-value in data object
-* **`setDataWithObject({…})`** : set data object with a new object
-* **`setCollapseKey('key')`** : set the collapse key
-* **`setDryRun(true|false)`** : set dry run
-* **`setRestrictedPackageName('package_name')`** : set restricted package name
-* **`setTimeToLive(12345)`** : set time to live
-* **`setDelayWhileIdle(true|false)`** : set delay while idle
-* **`addRegistrationId('id)`** : add a registration id
-* **`setRegistrationIds([…])`** : set the existing array of registration ids with new array
+* **`addDataWithKeyValue('key', 'value')`** : add key-value in data object, return true if data has been added
+* **`setDataWithObject({…})`** : set data object with a new object, return true if object size is lower or equal than 4096 bytes
+* **`setCollapseKey('key')`** : set the collapse key, return true if value is a string and has been set
+* **`setDryRun(true|false)`** : set dry run, return true if value is a boolean and has been set
+* **`setRestrictedPackageName('package_name')`** : set restricted package name, return true if value is a string and has been set
+* **`setTimeToLive(12345)`** : set time to live, return true if value is a number and has been set
+* **`setDelayWhileIdle(true|false)`** : set delay while idle, return true if value is a boolean and has been set
+* **`addRegistrationId('id)`** : add a registration id, return true if value has been added or is already in the array
+* **`setRegistrationIds([…])`** : set the existing array of registration ids with new array return true if object is an array and have a size greater than 0 and lower or equal than 1000
 
 ### Sender class methods
 
@@ -205,7 +205,7 @@ registration_id=32
 
 (The MIT License)
 
-Copyright (C) 2013 PinchProject <[http://pinchproject.com/](http://pinchproject.com/)>
+Copyright (C) 2013 PinchProject
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -214,6 +214,12 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Change log
+
+#### v0.1.4
+
+* update documentation
+* rename files to resolve an issue
+* when creating a new Message or Sender object with another object, more checks have been added (check all object property) and default value will be used if object property does not exists
 
 #### v0.1.3
 
