@@ -8,10 +8,13 @@
  * MIT Licensed
  */
 
-var querystring = require('querystring');
+var querystring = require('querystring'),
+    util = require('util');
 
 var request = require('request'),
-    attempt = require('attempt');
+    attempt = require('attempt'),
+    async = require('async'),
+    debug = require('debug')('gcm:sender');
 
 var MulticastResult = require('./MulticastResult.js'),
     Result = require('./Result.js');
@@ -22,6 +25,7 @@ var BACKOFF_DELAY = 1000,
 
 function Sender(data) {
     if (data) {
+        debug('initialize sender with object');
 
         data.hasOwnProperty('key') && typeof data.key === 'string' ?
             this.api_key = data.key : this.api_key = null;
@@ -32,6 +36,8 @@ function Sender(data) {
         data.hasOwnProperty('gcm_end_path') && typeof data.gcm_end_path === 'string' ?
             this.gcm_end_path = data.gcm_end_path : this.gcm_end_path = '/gcm/send';
     } else {
+        debug('initialize sender with default values');
+
         this.api_key = null;
         this.gcm_endpoint = 'https://android.googleapis.com';
         this.gcm_end_path = '/gcm/send';
@@ -42,7 +48,7 @@ Sender.prototype = {
     setAPIKey: setAPIKey,
     setGCMEndpoint: setGCMEndpoint,
     setGCMEndPath: setGCMEndPath,
-    send: send,
+    sendMessage: sendMessage,
     setBackoffDelay: setBackoffDelay,
     setBackoffFactor: setBackoffFactor,
     setMaxAttempts: setMaxAttempts
@@ -56,6 +62,11 @@ Sender.prototype = {
 function setBackoffDelay(delay) {
     if (typeof delay === 'number') {
         BACKOFF_DELAY = delay;
+        debug('backoff_delay correctly set');
+        return true;
+    } else {
+        debug('backoff_delay not set');
+        return false;
     }
 }
 
@@ -67,6 +78,11 @@ function setBackoffDelay(delay) {
 function setBackoffFactor(factor) {
     if (typeof factor === 'number') {
         BACKOFF_FACTOR = factor;
+        debug('backoff_factor correctly set');
+        return true;
+    } else {
+        debug('backoff not set');
+        return false;
     }
 }
 
@@ -78,6 +94,11 @@ function setBackoffFactor(factor) {
 function setMaxAttempts(attempts) {
     if (typeof  attempts === 'number') {
         MAX_ATTEMPTS = attempts;
+        debug('max_attempts correctly set');
+        return true;
+    } else {
+        debug('max_attempts not set');
+        return false;
     }
 }
 
@@ -89,6 +110,11 @@ function setMaxAttempts(attempts) {
 function setAPIKey(key) {
     if (typeof key === 'string') {
         this.api_key = key;
+        debug('api_key correctly set');
+        return true;
+    } else {
+        debug('api_key not set');
+        return false;
     }
 }
 
@@ -100,6 +126,11 @@ function setAPIKey(key) {
 function setGCMEndpoint(endpoint) {
     if (typeof endpoint === 'string') {
         this.gcm_endpoint = endpoint;
+        debug('gcm_endpoint correctly set');
+        return true;
+    } else {
+        debug('gcm_endpoint not set');
+        return false;
     }
 }
 
@@ -111,6 +142,11 @@ function setGCMEndpoint(endpoint) {
 function setGCMEndPath(end_path) {
     if (typeof end_path === 'string') {
         this.gcm_end_path = end_path;
+        debug('gcm_end_path correctly set');
+        return true;
+    } else {
+        debug('gcm_end_path not set');
+        return false;
     }
 }
 
@@ -123,8 +159,10 @@ function setGCMEndPath(end_path) {
  */
 function isSenderOptionsValid(self) {
     if (self.api_key && typeof self.api_key === 'string') {
+        debug('sender options is valid');
         return true;
     } else {
+        debug('sender options is not valid');
         return false;
     }
 }
@@ -134,32 +172,55 @@ function isSenderOptionsValid(self) {
  * without retries.
  *
  * @param message
+ * @param registration_ids
  * @param retries
  * @param done
  */
-function send(message, retries, done) {
-    if (isSenderOptionsValid(this)) {
-        if (message && retries) {
-            sendWithRetry(this, message, retries, function (err, data) {
-                if (!err) {
-                    done(null, data);
-                } else {
-                    done(err);
-                }
-            });
-        } else if (message && !retries) {
-            sendWithoutRetry(this, message, function (err, data) {
-                if (!err) {
-                    done(null, data);
-                } else {
-                    done(err);
-                }
+function sendMessage(message, registration_ids, retries, done) {
+    var self = this;
+
+    if (isSenderOptionsValid(self)) {
+        if (typeof message === 'object' && util.isArray(registration_ids)) {
+            createBatchArrays(registration_ids, function (arrays) {
+                registration_ids = arrays;
+
+                send(self, message, registration_ids, retries, done);
             });
         } else {
-            done(new Error('Undefined message parameter'));
+            send(self, message, registration_ids, retries, done);
         }
     } else {
         done(new Error('Invalid sender options'));
+    }
+}
+
+/**
+ *
+ * @param self
+ * @param message
+ * @param registration_ids
+ * @param retries
+ * @param done
+ */
+function send(self, message, registration_ids, retries, done) {
+    if (message && retries) {
+        sendWithRetry(self, message, retries, registration_ids, function (err, data) {
+            if (!err) {
+                done(null, data);
+            } else {
+                done(err);
+            }
+        });
+    } else if (message && !retries) {
+        sendWithoutRetry(self, message, registration_ids, function (err, data) {
+            if (!err) {
+                done(null, data);
+            } else {
+                done(err);
+            }
+        });
+    } else {
+        done(new Error('Undefined message parameter'));
     }
 }
 
@@ -169,9 +230,10 @@ function send(message, retries, done) {
  *
  * @param self
  * @param message
+ * @param registration_ids
  * @param done
  */
-function sendWithoutRetry(self, message, done) {
+function sendWithoutRetry(self, message, registration_ids, done) {
     var options = {
         url: self.gcm_endpoint + self.gcm_end_path,
         method: 'POST',
@@ -180,36 +242,102 @@ function sendWithoutRetry(self, message, done) {
         }
     };
 
+    debug('registration_ids format : %s', typeof registration_ids);
+
     switch (typeof message) {
         case 'string':
-            options['body'] = message;
+            debug('try to send a plain-text message without retry');
+
             options['headers']['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
             options['headers']['Content-length'] = Buffer.byteLength(message, 'utf8');
 
-            sendRequest(options, function (err, data) {
-                if (!err) {
-                    data = querystring.parse(data, '\n', '=');
+            if (typeof registration_ids === 'string') {
+                options['body'] = message + '&registration_id=' + registration_ids;
 
-                    createResult(querystring.parse(message).registration_id, data, done);
-                } else {
-                    done(err);
-                }
-            });
+                sendRequest(options, function (err, data) {
+                    if (!err) {
+                        data = querystring.parse(data, '\n', '=');
+
+                        createResult(registration_ids, data, done);
+                    } else {
+                        debug('error occurs when sending a plain-text message without retry');
+                        done(err);
+                    }
+                });
+            } else if (util.isArray(registration_ids) && registration_ids.length === 1) {
+                options['body'] = message + '&registration_id=' + registration_ids[0];
+
+                sendRequest(options, function (err, data) {
+                    if (!err) {
+                        data = querystring.parse(data, '\n', '=');
+
+                        createResult(registration_ids[0], data, done);
+                    } else {
+                        debug('error occurs when sending a plain-text message without retry');
+                        done(err);
+                    }
+                });
+            } else {
+                done(new Error('registration_ids must be a string or an array of 1 element'));
+            }
             break;
         case 'object':
-            options['body'] = JSON.stringify(message);
+            debug('try to send a JSON message without retry');
+
             options['headers']['Content-Type'] = 'application/json';
             options['headers']['Content-length'] = Buffer.byteLength(JSON.stringify(message), 'utf8');
 
-            sendRequest(options, function (err, data) {
-                if (!err) {
-                    data = JSON.parse(data);
+            if (util.isArray(registration_ids)) {
+                var multicastResult = new MulticastResult();
 
-                    createMulticastResult(message.registration_ids, data, done);
-                } else {
-                    done(err);
-                }
-            });
+                async.forEachSeries(registration_ids, function (array, callback) {
+                    message['registration_ids'] = array;
+
+                    options['body'] = JSON.stringify(message);
+
+                    sendRequest(options, function (err, data) {
+                        if (!err) {
+                            try {
+                                data = JSON.parse(data);
+
+                                multicastResult.addMulticastId(data.multicast_id);
+                                multicastResult.addSuccessLength(data.success);
+                                multicastResult.addFailuresLength(data.failure);
+                                multicastResult.addCanonicalIdsLength(data.canonical_ids);
+
+                                var results = data.results;
+
+                                for (var i = 0; i < results.length; i++) {
+                                    if (results[i].hasOwnProperty('registration_id')) {
+                                        multicastResult.addCanonicalIdObject({
+                                            message_id: results[i].message_id,
+                                            registration_id: array[i],
+                                            new_registration_id: results[i].registration_id
+                                        });
+                                    } else if (results[i].hasOwnProperty('error')) {
+                                        multicastResult.addFailureValueWithKey(results[i].error, array[i]);
+                                    }
+                                }
+
+                                callback();
+                            } catch (ex) {
+                                callback(ex);
+                            }
+                        } else {
+                            debug('error occurs when sending a JSON message without retry');
+                            callback(err);
+                        }
+                    });
+                }, function (err) {
+                    if (!err) {
+                        done(null, multicastResult.toJSON());
+                    } else {
+                        done(err);
+                    }
+                });
+            } else {
+                done(new Error('registration_ids must be an array'));
+            }
             break;
         default:
             done(new Error('Invalid type for message, must be string or object type.'));
@@ -222,9 +350,10 @@ function sendWithoutRetry(self, message, done) {
  * @param self
  * @param message
  * @param retries
+ * @param registration_ids
  * @param done
  */
-function sendWithRetry(self, message, retries, done) {
+function sendWithRetry(self, message, retries, registration_ids, done) {
     if (retries > MAX_ATTEMPTS) {
         retries = MAX_ATTEMPTS;
     }
@@ -237,58 +366,122 @@ function sendWithRetry(self, message, retries, done) {
         }
     };
 
+    debug('registration_ids format : %s', typeof registration_ids);
+
     switch (typeof message) {
         case 'string':
-            options['body'] = message;
+            debug('try to send a plain-text message with %s retries', retries);
+
             options['headers']['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
             options['headers']['Content-length'] = Buffer.byteLength(message, 'utf8');
 
-            attempt(
-                function () {
-                    sendRequest(options, this);
-                },
-                {
-                    retries: retries,
-                    interval: BACKOFF_DELAY,
-                    factor: BACKOFF_FACTOR
-                },
-                function (err, data) {
-                    if (!err) {
-                        data = querystring.parse(data, '\n', '=');
-
-                        createResult(querystring.parse(message).registration_id, data, done);
-                    } else {
-                        done(err);
-                    }
+            if (typeof registration_ids === 'string' || (util.isArray(registration_ids) && registration_ids.length == 1)) {
+                if (typeof registration_ids === 'string') {
+                    options['body'] = message + '&registration_id=' + registration_ids;
+                } else {
+                    options['body'] = message + '&registration_id=' + registration_ids[0];
                 }
-            );
 
+                attempt(
+                    function (attemtps) {
+                        debug('attempts : %s', attemtps);
+
+                        sendRequest(options, this);
+                    },
+                    {
+                        retries: retries,
+                        interval: BACKOFF_DELAY,
+                        factor: BACKOFF_FACTOR
+                    },
+                    function (err, data) {
+                        if (!err) {
+                            data = querystring.parse(data, '\n', '=');
+
+                            if (typeof registration_ids === 'string') {
+                                createResult(registration_ids, data, done);
+                            } else {
+                                createResult(registration_ids[0], data, done);
+                            }
+                        } else {
+                            debug('error occurs when sending a plain-text message with retry');
+                            done(err);
+                        }
+                    }
+                );
+            } else {
+                done(new Error('registration_ids must be a string or an array of 1 element'));
+            }
             break;
         case 'object':
+            debug('try to send a JSON message with %s retries', retries);
+
             options['body'] = JSON.stringify(message);
             options['headers']['Content-Type'] = 'application/json';
             options['headers']['Content-length'] = Buffer.byteLength(JSON.stringify(message), 'utf8');
 
-            attempt(
-                function () {
-                    sendRequest(options, this);
-                },
-                {
-                    retries: retries,
-                    interval: BACKOFF_DELAY,
-                    factor: BACKOFF_FACTOR
-                },
-                function (err, data) {
-                    if (!err) {
-                        data = JSON.parse(data);
+            if (util.isArray(registration_ids)) {
+                var multicastResult = new MulticastResult();
 
-                        createMulticastResult(message.registration_ids, data, done);
+                async.forEachSeries(registration_ids, function (array, callback) {
+                    message['registration_ids'] = array;
+
+                    options['body'] = JSON.stringify(message);
+
+                    attempt(
+                        function (attempts) {
+                            debug('attempts : %s', attempts);
+
+                            sendRequest(options, this);
+                        },
+                        {
+                            retries: retries,
+                            interval: BACKOFF_DELAY,
+                            factor: BACKOFF_FACTOR
+                        },
+                        function (err, data) {
+                            if (!err) {
+                                try {
+                                    data = JSON.parse(data);
+
+                                    multicastResult.addMulticastId(data.multicast_id);
+                                    multicastResult.addSuccessLength(data.success);
+                                    multicastResult.addFailuresLength(data.failure);
+                                    multicastResult.addCanonicalIdsLength(data.canonical_ids);
+
+                                    var results = data.results;
+
+                                    for (var i = 0; i < results.length; i++) {
+                                        if (results[i].hasOwnProperty('registration_id')) {
+                                            multicastResult.addCanonicalIdObject({
+                                                message_id: results[i].message_id,
+                                                registration_id: array[i],
+                                                new_registration_id: results[i].registration_id
+                                            });
+                                        } else if (results[i].hasOwnProperty('error')) {
+                                            multicastResult.addFailureValueWithKey(results[i].error, array[i]);
+                                        }
+                                    }
+
+                                    callback();
+                                } catch (ex) {
+                                    callback(ex);
+                                }
+                            } else {
+                                debug('error occurs when sending a JSON message with retry');
+                                callback(err);
+                            }
+                        }
+                    );
+                }, function (err) {
+                    if (!err) {
+                        done(null, multicastResult.toJSON());
                     } else {
                         done(err);
                     }
-                }
-            );
-
+                });
+            } else {
+                done(new Error('registration_ids must be an array'));
+            }
             break;
         default:
             done(new Error('Invalid type for message, must be string or object type.'));
@@ -305,6 +498,8 @@ function sendWithRetry(self, message, retries, done) {
 function sendRequest(options, done) {
     request(options, function (err, res, body) {
         if (!err) {
+            debug('GCM server respond with HTTP code : %s', res.statusCode);
+
             switch (res.statusCode) {
                 case 200:
                     done(null, body);
@@ -334,41 +529,11 @@ function sendRequest(options, done) {
                     done(new Error('INVALID_REQUEST'));
             }
         } else {
+            debug('error occurs before sending request');
+
             done(err);
         }
     });
-}
-
-/**
- * Create a multicast result object and send it back as response.
- *
- * @param registration_ids
- * @param data
- * @param done
- */
-function createMulticastResult(registration_ids, data, done) {
-    var result = new MulticastResult();
-
-    result.setMulticastId(data.multicast_id);
-    result.setSuccessLength(data.success);
-    result.setFailuresLength(data.failure);
-    result.setCanonicalIdsLength(data.canonical_ids);
-
-    var results = data.results;
-
-    for (var i = 0; i < results.length; i++) {
-        if (results[i].hasOwnProperty('registration_id')) {
-            result.addCanonicalIdObject({
-                message_id: results[i].message_id,
-                registration_id: registration_ids[i],
-                new_registration_id: results[i].registration_id
-            });
-        } else if (results[i].hasOwnProperty('error')) {
-            result.addFailureValueWithKey(results[i].error, registration_ids[i]);
-        }
-    }
-
-    done(null, result.toJSON());
 }
 
 /**
@@ -391,7 +556,24 @@ function createResult(registration_id, data, done) {
         result.setError(data.Error);
     }
 
+    debug('simple result created');
+
     done(null, result.toJSON());
+}
+
+/**
+ *
+ * @param registration_ids
+ * @param done
+ */
+function createBatchArrays(registration_ids, done) {
+    var array = [];
+
+    while (registration_ids.length) {
+        array.push(registration_ids.splice(0, 1000));
+    }
+
+    done(array);
 }
 
 module.exports = Sender;
