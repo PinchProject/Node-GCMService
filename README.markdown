@@ -2,6 +2,8 @@
 
 A node.js module for **[Google Cloud Messaging](http://developer.android.com/google/gcm/index.html)**.
 
+![dependencies](https://david-dm.org/PinchProject/Node-GCMService.png)
+
 ## Installation
 
 ```
