@@ -1,6 +1,6 @@
 # Node-GCMService
 
-A node.js module for **[Google Cloud Messaging](http://developer.android.com/google/gcm/index.html)**
+A node.js module for **[Google Cloud Messaging](http://developer.android.com/google/gcm/index.html)**.
 
 ## Installation
 
@@ -43,12 +43,6 @@ message.setDryRun(false);
 
 // set delay while idle
 message.setDelayWhileIdle(true);
-
-// set registration ids
-message.setRegistrationIds(['id1','id2']);
-
-// add a registration id
-message.addRegistrationId('id3');
 ```
 
 * with another object (undefined variables will be set with the default values)
@@ -92,7 +86,7 @@ And finally send the message to the specified registration id(s) with retries or
 * with retries in JSON format (max: 10 retries using exponential back-off)
 
 ```javascript
-sender.send(message.toJSON(), 6, function(err, data) {
+sender.send(message.toJSON(), registration_ids, 6, function(err, data) {
 	if (!err) {
 		// do something
 	} else {
@@ -104,7 +98,7 @@ sender.send(message.toJSON(), 6, function(err, data) {
 * without retries in plain-text format
 
 ```javascript
-sender.send(message.toString(), null, function(err, data) {
+sender.send(message.toString(), registration_ids, null, function(err, data) {
 	if (!err) {
 		// do something
 	} else {
@@ -188,15 +182,13 @@ registration_id=32
 * **`setRestrictedPackageName('package_name')`** : set restricted package name, return true if value is a string and has been set
 * **`setTimeToLive(12345)`** : set time to live, return true if value is a number and has been set
 * **`setDelayWhileIdle(true|false)`** : set delay while idle, return true if value is a boolean and has been set
-* **`addRegistrationId('id)`** : add a registration id, return true if value has been added or is already in the array
-* **`setRegistrationIds([…])`** : set the existing array of registration ids with new array return true if object is an array and have a size greater than 0 and lower or equal than 1000
 
 ### Sender class methods
 
 * **`setAPIKey('key')`** : set the api key
 * **`setGCMEndpoint('endpoint')`** : set the GCM endpoint (default: https://android.googleapis.com)
 * **`setGCMEndPath('endpath')`** : set the GCM end path (default: /gcm/send)
-* **`send(message, retries, callback)`** : send the notification to the registration id(s) with or without retries in JSON or plain-text format and return the response data or an error
+* **`sendMessage(message, registration_ids, retries, callback)`** : send the notification to the registration id(s) with or without retries in JSON or plain-text format and return the response data or an error
 * **`setBackoffDelay(value)`** : set the back-off delay in milliseconds (default: 1000)
 * **`setBackoffFactor(value)`** : set the back-off factor by which the back-off delay should be multiplied per attempt (default: 1.2)
 * **`setMaxAttempts(value)`** : set the max number of retries (default: 10)
@@ -213,7 +205,24 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## Credits
+
+This module was written based on [node-gcm](https://github.com/ToothlessGear/node-gcm)
+
+#### Written by
+
+* [Ismael Gorissen](https://github.com/igorissen)
+
+#### Maintained by
+
+* [Ismael Gorissen](https://github.com/igorissen)
+
 ## Change log
+
+#### v0.2.0
+
+* split-up the registration_ids array from the message class
+* send notification to more than 1000 devices and return a unified result
 
 #### v0.1.4
 

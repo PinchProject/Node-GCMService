@@ -21,14 +21,18 @@ function MulticastResult() {
 
 MulticastResult.prototype = {
     setMulticastId: setMulticastId,
+    addMulticastId: addMulticastId,
     setFailures: setFailures,
     setCanonicalIds: setCanonicalIds,
     addCanonicalIdObject: addCanonicalIdObject,
     addFailureValueWithKey: addFailureValueWithKey,
     toJSON: toJSON,
     setSuccessLength: setSuccessLength,
+    addSuccessLength: addSuccessLength,
     setFailuresLength: setFailuresLength,
-    setCanonicalIdsLength: setCanonicalIdsLength
+    addFailuresLength: addFailuresLength,
+    setCanonicalIdsLength: setCanonicalIdsLength,
+    addCanonicalIdsLength: addCanonicalIdsLength
 };
 
 /**
@@ -69,6 +73,29 @@ function toJSON() {
 function setMulticastId(id) {
     if (typeof id === 'number') {
         this.multicast_id = id;
+    }
+}
+
+/**
+ * Add multicast_id.
+ *
+ * @param id
+ */
+function addMulticastId(id) {
+    if (typeof id === 'number') {
+        if (!this.multicast_id) {
+            this.multicast_id = id;
+        } else if (typeof this.multicast_id === 'number') {
+            if (this.multicast_id != id) {
+                var tmp = this.multicast_id;
+
+                this.multicast_id = [tmp, id];
+            }
+        } else if (typeof this.multicast_id === 'object') {
+            if (this.multicast_id.indexOf(id) == -1) {
+                this.multicast_id.push(id);
+            }
+        }
     }
 }
 
@@ -133,6 +160,17 @@ function setSuccessLength(length) {
 }
 
 /**
+ * Increase success length.
+ *
+ * @param length
+ */
+function addSuccessLength(length) {
+    if (typeof length === 'number') {
+        this.success_length += length;
+    }
+}
+
+/**
  * Set failures length.
  *
  * @param length
@@ -144,6 +182,17 @@ function setFailuresLength(length) {
 }
 
 /**
+ * Increase failures length.
+ *
+ * @param length
+ */
+function addFailuresLength(length) {
+    if (typeof length === 'number') {
+        this.failures_length += length;
+    }
+}
+
+/**
  * Set canonical_ids length.
  *
  * @param length
@@ -151,6 +200,17 @@ function setFailuresLength(length) {
 function setCanonicalIdsLength(length) {
     if (typeof length === 'number') {
         this.canonical_ids_length = length;
+    }
+}
+
+/**
+ * Increase canonical_ids length.
+ *
+ * @param length
+ */
+function addCanonicalIdsLength(length) {
+    if (typeof length === 'number') {
+        this.canonical_ids_length += length;
     }
 }
 
