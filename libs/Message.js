@@ -10,11 +10,11 @@
 
 var util = require('util');
 
-function Message(obj) {
-    if (obj && typeof obj === 'object') {
+var debug = require('debug')('gcm:message');
 
-        obj.hasOwnProperty('registration_ids') && registrationIdsIsValid(obj.registration_ids) ?
-            this.registration_ids = obj.registration_ids : this.registration_ids = [];
+function Message(obj) {
+    if (obj && typeof obj === 'object' && Object.keys(obj).length > 0) {
+        debug('initialize message with object');
 
         obj.hasOwnProperty('collapse_key') && collapseKeyIsValid(obj.collapse_key) ?
             this.collapse_key = obj.collapse_key : this.collapse_key = null;
@@ -34,7 +34,8 @@ function Message(obj) {
         obj.hasOwnProperty('dry_run') && dryRunIsValid(obj.dry_run) ?
             this.dry_run = obj.dry_run : this.dry_run = false;
     } else {
-        this.registration_ids = [];
+        debug('initialize message with default values');
+
         this.collapse_key = null;
         this.data = {};
         this.delay_while_idle = false;
@@ -53,9 +54,7 @@ Message.prototype = {
     setDryRun: setDryRun,
     setRestrictedPackageName: setRestrictedPackageName,
     setTimeToLive: setTimeToLive,
-    setDelayWhileIdle: setDelayWhileIdle,
-    addRegistrationId: addRegistrationId,
-    setRegistrationIds: setRegistrationIds
+    setDelayWhileIdle: setDelayWhileIdle
 };
 
 /**
@@ -70,9 +69,8 @@ function toJSON() {
 
     if (delayWhileIdleIsValid(this.delay_while_idle) && timeToLiveIsValid(this.time_to_live)
         && restrictedPackageNameIsValid(this.restricted_package_name) && dryRunIsValid(this.dry_run)
-        && dataIsValid(this.data) && collapseKeyIsValid(this.collapse_key) && registrationIdsIsValid(this.registration_ids)) {
+        && dataIsValid(this.data) && collapseKeyIsValid(this.collapse_key)) {
 
-        json['registration_ids'] = this.registration_ids;
         json['data'] = this.data;
         json['delay_while_idle'] = this.delay_while_idle;
         json['time_to_live'] = this.time_to_live;
@@ -85,7 +83,11 @@ function toJSON() {
         if (this.restricted_package_name) {
             json['restricted_package_name'] = this.restricted_package_name;
         }
+
+        debug('message object is valid');
     } else {
+        debug('message object is not valid');
+
         json = null
     }
 
@@ -104,9 +106,8 @@ function toString() {
 
     if (delayWhileIdleIsValid(this.delay_while_idle) && timeToLiveIsValid(this.time_to_live)
         && restrictedPackageNameIsValid(this.restricted_package_name) && dryRunIsValid(this.dry_run)
-        && dataIsValid(this.data) && collapseKeyIsValid(this.collapse_key) && registrationIdIsValid(this.registration_ids)) {
+        && dataIsValid(this.data) && collapseKeyIsValid(this.collapse_key)) {
 
-        string += 'registration_id=' + this.registration_ids[0];
         string += dataToString(this);
         string += '&time_to_live=' + this.time_to_live;
 
@@ -129,7 +130,11 @@ function toString() {
         if (this.restricted_package_name) {
             string += '&restricted_package_name=' + this.restricted_package_name;
         }
+
+        debug('message object is valid');
     } else {
+        debug('message object is not valid');
+
         string = null
     }
 
@@ -144,7 +149,7 @@ function toString() {
  * @returns {string}
  */
 function dataToString(self) {
-    var data = '&';
+    var data = '';
 
     var keys = Object.keys(self.data);
 
@@ -152,7 +157,11 @@ function dataToString(self) {
         data += 'data.' + key + '=' + encodeURI(self.data[key]) + '&';
     });
 
-    return data.slice(0, -1);
+    data = data.slice(0, -1);
+
+    debug('data object to string format');
+
+    return data;
 }
 
 /**
@@ -163,8 +172,10 @@ function dataToString(self) {
  */
 function delayWhileIdleIsValid(delay_while_idle) {
     if (typeof delay_while_idle === 'boolean') {
+        debug('delay_while_idle is a boolean (valid)');
         return true;
     } else {
+        debug('delay_while_idle is not valid');
         return false;
     }
 }
@@ -179,8 +190,10 @@ function delayWhileIdleIsValid(delay_while_idle) {
  */
 function timeToLiveIsValid(time_to_live) {
     if (typeof time_to_live === 'number' && time_to_live > 0 && time_to_live <= 2419200) {
+        debug('time_to_live is a number between 0 and 2419200');
         return true;
     } else {
+        debug('time_to_live is not valid');
         return false;
     }
 }
@@ -194,8 +207,10 @@ function timeToLiveIsValid(time_to_live) {
  */
 function restrictedPackageNameIsValid(restricted_package_name) {
     if (typeof restricted_package_name === 'string' || !restricted_package_name) {
+        debug('restricted_package_name is a string and is not null (valid)');
         return true;
     } else {
+        debug('restricted_package_name is not valid');
         return false;
     }
 }
@@ -208,8 +223,10 @@ function restrictedPackageNameIsValid(restricted_package_name) {
  */
 function dryRunIsValid(dry_run) {
     if (typeof dry_run === 'boolean') {
+        debug('dry_run is a boolean (valid)');
         return true;
     } else {
+        debug('dry_run is not valid');
         return false;
     }
 }
@@ -223,40 +240,10 @@ function dryRunIsValid(dry_run) {
  */
 function dataIsValid(data) {
     if (typeof data === 'object' && Buffer.byteLength(JSON.stringify(data)) < 4096) {
+        debug('data object is valid and have a size lower or equal than 4096 bytes');
         return true;
     } else {
-        return false;
-    }
-}
-
-/**
- * Check if registration_ids is an Array and return true.
- * Use this function when sending a JSON request.
- *
- * @param registration_ids
- * @returns {boolean}
- */
-function registrationIdsIsValid(registration_ids) {
-    if (util.isArray(registration_ids)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/**
- * Check if registration_ids is an Array and have one value and
- * return true.
- * Use this function when sending a plain-text request (only
- * one registration_id).
- *
- * @param registration_ids
- * @returns {boolean}
- */
-function registrationIdIsValid(registration_ids) {
-    if (util.isArray(registration_ids) && registration_ids.length == 1) {
-        return true;
-    } else {
+        debug('data object is not valid');
         return false;
     }
 }
@@ -270,8 +257,10 @@ function registrationIdIsValid(registration_ids) {
  */
 function collapseKeyIsValid(collapse_key) {
     if (typeof collapse_key === 'string' || !collapse_key) {
+        debug('collapse_key is a string and is not null (valid)');
         return true;
     } else {
+        debug('collapse_key is not valid');
         return false;
     }
 }
@@ -287,12 +276,15 @@ function addDataWithKeyValue(key, value) {
         this.data[key] = value;
 
         if (dataIsValid(this.data)) {
+            debug('key added');
             return true;
         } else {
+            debug('key can not be added because data object size will be greater than 4096 bytes');
             delete this.data[key];
             return false;
         }
     } else {
+        debug('key already added');
         return true;
     }
 }
@@ -305,8 +297,10 @@ function addDataWithKeyValue(key, value) {
 function setDataWithObject(obj) {
     if (dataIsValid(obj)) {
         this.data = obj;
+        debug('data correctly set');
         return true;
     } else {
+        debug('data not set');
         return false;
     }
 }
@@ -318,8 +312,10 @@ function setDataWithObject(obj) {
 function setCollapseKey(key) {
     if (typeof key === 'string') {
         this.collapse_key = key;
+        debug('collapse_key correctly set');
         return true;
     } else {
+        debug('collapse_key not set');
         return false;
     }
 }
@@ -332,8 +328,10 @@ function setCollapseKey(key) {
 function setDryRun(value) {
     if (typeof value === 'boolean') {
         this.dry_run = value;
+        debug('dry_run correctly set');
         return true;
     } else {
+        debug('dry_run not set');
         return false;
     }
 }
@@ -346,8 +344,10 @@ function setDryRun(value) {
 function setRestrictedPackageName(value) {
     if (typeof value === 'string') {
         this.restricted_package_name = value;
+        debug('restricted_package_name correctly set');
         return true;
     } else {
+        debug('restricted_package_name not set');
         return false;
     }
 }
@@ -360,8 +360,10 @@ function setRestrictedPackageName(value) {
 function setTimeToLive(value) {
     if (typeof value === 'number') {
         this.time_to_live = value;
+        debug('time_to_live correctly set');
         return true;
     } else {
+        debug('time_to_live not set');
         return false;
     }
 }
@@ -374,41 +376,10 @@ function setTimeToLive(value) {
 function setDelayWhileIdle(value) {
     if (typeof value === 'boolean') {
         this.delay_while_idle = value;
+        debug('delay_while_idle correctly set');
         return true;
     } else {
-        return false;
-    }
-}
-
-/**
- * Add a registration id.
- *
- * @param id
- * @returns {boolean}
- */
-function addRegistrationId(id) {
-    if (typeof id === 'string' && this.registration_ids.length < 1000) {
-        if (this.registration_ids.indexOf(id) == -1) {
-            this.registration_ids.push(id);
-        }
-
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/**
- * Set registration_ids.
- *
- * @param ids
- * @returns {boolean}
- */
-function setRegistrationIds(ids) {
-    if (util.isArray(ids) && ids.length <= 1000) {
-        this.registration_ids = ids;
-        return true;
-    } else {
+        debug('delay_while_idle not set');
         return false;
     }
 }
