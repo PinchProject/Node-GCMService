@@ -168,8 +168,7 @@ function isSenderOptionsValid(self) {
 }
 
 /**
- * Send the message to the GCM server with or
- * without retries.
+ * Send the message to the GCM server.
  *
  * @param message
  * @param registration_ids
@@ -195,6 +194,8 @@ function sendMessage(message, registration_ids, retries, done) {
 }
 
 /**
+ * Send the message to GCM Server with or
+ * without retries.
  *
  * @param self
  * @param message
@@ -562,6 +563,7 @@ function createResult(registration_id, data, done) {
 }
 
 /**
+ * Create an array of arrays that have a size of 1000 max.
  *
  * @param registration_ids
  * @param done
