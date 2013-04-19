@@ -11,12 +11,14 @@
 function Result() {
     this.id = null;
     this.registration_id = null;
+    this.old_registration_id = null;
     this.error = null;
 }
 
 Result.prototype = {
     setId: setId,
     setRegistrationId: setRegistrationId,
+    setOldRegistrationId: setOldRegistrationId,
     setError: setError,
     toJSON: toJSON
 };
@@ -35,6 +37,7 @@ function toJSON() {
 
         if (this.registration_id) {
             json['registration_id'] = this.registration_id;
+            json['old_registration_id'] = this.old_registration_id;
         }
     } else if (this.error && !this.id) {
         json['error'] = this.error;
@@ -73,6 +76,17 @@ function setRegistrationId(id) {
 function setError(error) {
     if (typeof error === 'string') {
         this.error = error;
+    }
+}
+
+/**
+ * Set ol_registration_id.
+ *
+ * @param id
+ */
+function setOldRegistrationId(id) {
+    if (typeof id === 'string') {
+        this.old_registration_id = id;
     }
 }
 
