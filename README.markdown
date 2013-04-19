@@ -170,6 +170,7 @@ registration_id=32
 {
 	"id": "1:2342",
 	"registration_id": "32"
+	"old_registration_id": "14"
 }
 ```
 
@@ -220,6 +221,10 @@ This module was written based on [node-gcm](https://github.com/ToothlessGear/nod
 * [Ismael Gorissen](https://github.com/igorissen)
 
 ## Change log
+
+#### v0.2.1
+
+* add the old registration_id to the plain-text response object
 
 #### v0.2.0
 
