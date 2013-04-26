@@ -48,16 +48,16 @@ function toJSON() {
         json['multicast_id'] = this.multicast_id;
 
         json['success_length'] = this.success_length;
+        json['canonical_ids_length'] = this.canonical_ids_length;
+        json['failures_length'] = this.failures_length;
 
         if (this.failures_length > 0) {
             json['failures'] = this.failures;
         }
-        json['failures_length'] = this.failures_length;
 
         if (this.canonical_ids_length > 0) {
             json['canonical_ids'] = this.canonical_ids;
         }
-        json['canonical_ids_length'] = this.canonical_ids_length;
     } else {
         json = null;
     }

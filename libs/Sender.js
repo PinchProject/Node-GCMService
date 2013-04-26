@@ -552,6 +552,7 @@ function createResult(registration_id, data, done) {
 
         if (data.hasOwnProperty('registration_id')) {
             result.setRegistrationId(data.registration_id);
+            result.setOldRegistrationId(registration_id);
         }
     } else if (data.hasOwnProperty('Error')) {
         result.setError(data.Error);
