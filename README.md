@@ -222,6 +222,10 @@ This module was written based on [node-gcm](https://github.com/ToothlessGear/nod
 
 ## Change log
 
+#### v0.2.3
+
+* update request module version
+
 #### v0.2.1
 
 * add the old registration_id to the plain-text response object
