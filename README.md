@@ -1,7 +1,5 @@
 # Node-GCMService
 
-A node.js module for **[Google Cloud Messaging](http://developer.android.com/google/gcm/index.html)**.
-
 ![dependencies](https://david-dm.org/PinchProject/Node-GCMService.png)
 
 ## Installation
@@ -211,14 +209,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## Credits
 
 This module was written based on [node-gcm](https://github.com/ToothlessGear/node-gcm)
-
-#### Written by
-
-* [Ismael Gorissen](https://github.com/igorissen)
-
-#### Maintained by
-
-* [Ismael Gorissen](https://github.com/igorissen)
 
 ## Change log
 
