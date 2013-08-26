@@ -91,7 +91,7 @@ var sender = new gcm.Sender({
 
 And finally send the message to the specified registration id(s) with retries or not, in JSON format or plain-text format :
 
-* with retries in JSON format (max: 10 retries using exponential back-off)
+* with retries in JSON format
 
 ```javascript
 sender.sendMessage(message.toJSON(), registration_ids, true, function(err, data) {
