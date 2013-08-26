@@ -14,6 +14,7 @@ var debug = require('debug')('gcm:result');
 
 /**
  *
+ * @param data
  * @constructor
  */
 function Result(data) {
