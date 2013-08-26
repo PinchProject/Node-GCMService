@@ -1,11 +1,19 @@
-# Node-GCMService
+# Node-GCMService [![NPM version](https://badge.fury.io/js/node-gcm-service.png)](http://badge.fury.io/js/node-gcm-service)
+
+[![NPM](https://nodei.co/npm/node-gcm-service.png?downloads=true&stars=true)](https://nodei.co/npm/node-gcm-service/)
+
+## Description
+
+Node.js wrapper to send notification to Android devices using Google Cloud Messaging service.
+
+## Badges
 
 ![dependencies](https://david-dm.org/PinchProject/Node-GCMService.png)
 
 ## Installation
 
 ```
-[sudo] npm install node-gcm-service
+npm install node-gcm-service
 ```
 
 ## Requirements
@@ -86,7 +94,7 @@ And finally send the message to the specified registration id(s) with retries or
 * with retries in JSON format (max: 10 retries using exponential back-off)
 
 ```javascript
-sender.send(message.toJSON(), registration_ids, 6, function(err, data) {
+sender.sendMessage(message.toJSON(), registration_ids, true, function(err, data) {
 	if (!err) {
 		// do something
 	} else {
@@ -98,7 +106,7 @@ sender.send(message.toJSON(), registration_ids, 6, function(err, data) {
 * without retries in plain-text format
 
 ```javascript
-sender.send(message.toString(), registration_ids, null, function(err, data) {
+sender.sendMessage(message.toString(), registration_ids, false, function(err, data) {
 	if (!err) {
 		// do something
 	} else {
@@ -176,23 +184,23 @@ registration_id=32
 
 * **`toJSON()`** : JSON representation of the object
 * **`toString()`** : String representation of the object
-* **`addDataWithKeyValue('key', 'value')`** : add key-value in data object, return true if data has been added
-* **`setDataWithObject({…})`** : set data object with a new object, return true if object size is lower or equal than 4096 bytes
-* **`setCollapseKey('key')`** : set the collapse key, return true if value is a string and has been set
-* **`setDryRun(true|false)`** : set dry run, return true if value is a boolean and has been set
-* **`setRestrictedPackageName('package_name')`** : set restricted package name, return true if value is a string and has been set
-* **`setTimeToLive(12345)`** : set time to live, return true if value is a number and has been set
-* **`setDelayWhileIdle(true|false)`** : set delay while idle, return true if value is a boolean and has been set
+* **`addNewKeyValue('key', 'value')`** : add key-value in data object, return false if key can not be added
+* **`setDataWithObject({…})`** : set data object with a new object
+* **`setCollapseKey('key')`** : set collapse_key
+* **`setDryRun(true|false)`** : set dry_run
+* **`setRestrictedPackageName('package_name')`** : set restricted_package_name
+* **`setTimeToLive(12345)`** : set time_to_live
+* **`setDelayWhileIdle(true|false)`** : set delay_while_idle
 
 ### Sender class methods
 
-* **`setAPIKey('key')`** : set the api key
-* **`setGCMEndpoint('endpoint')`** : set the GCM endpoint (default: https://android.googleapis.com)
-* **`setGCMEndPath('endpath')`** : set the GCM end path (default: /gcm/send)
+* **`setAPIKey('key')`** : set api key
+* **`setGCMEndpoint('endpoint')`** : set GCM endpoint (default: https://android.googleapis.com)
+* **`setGCMEndPath('endpath')`** : set GCM end path (default: /gcm/send)
 * **`sendMessage(message, registration_ids, retries, callback)`** : send the notification to the registration id(s) with or without retries in JSON or plain-text format and return the response data or an error
 * **`setBackoffDelay(value)`** : set the back-off delay in milliseconds (default: 1000)
 * **`setBackoffFactor(value)`** : set the back-off factor by which the back-off delay should be multiplied per attempt (default: 1.2)
-* **`setMaxAttempts(value)`** : set the max number of retries (default: 10)
+* **`setAttempts(value)`** : set the number of retries
 
 ## License
 
@@ -211,6 +219,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 This module was written based on [node-gcm](https://github.com/ToothlessGear/node-gcm)
 
 ## Change log
+
+#### v0.2.5
+
+* code refactoring
+* update modules
+* update documentation
 
 #### v0.2.3
 

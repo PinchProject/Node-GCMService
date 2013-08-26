@@ -8,86 +8,108 @@
  * MIT Licensed
  */
 
-function Result() {
+var util = require('util');
+
+var debug = require('debug')('gcm:result');
+
+/**
+ *
+ * @param data
+ * @constructor
+ */
+function Result(data) {
     this.id = null;
     this.registration_id = null;
     this.old_registration_id = null;
     this.error = null;
+
+    if (data && typeof data === 'object' && !util.isArray(data)) {
+        this.id = 'id' in data && typeof data.id === 'string' ?
+            data.id : null;
+        this.registration_id = 'registration_id' in data && typeof data.registration_id === 'string' ?
+            data.registration_id : null;
+        this.old_registration_id = 'old_registration_id' in data && typeof data.old_registration_id === 'string' ?
+            data.old_registration_id : null;
+        this.error = 'error' in data && typeof data.error === 'string' ?
+            data.error : null;
+    }
+
+    debug(
+        'CONSTRUCTOR > instance initialized with : "id"=%s, "registration_id"=%s,' +
+            ' "old_registration_id"=%s, "error"=%s',
+        this.id,
+        this.registration_id,
+        this.old_registration_id,
+        this.error
+    );
 }
 
-Result.prototype = {
-    setId: setId,
-    setRegistrationId: setRegistrationId,
-    setOldRegistrationId: setOldRegistrationId,
-    setError: setError,
-    toJSON: toJSON
-};
+// ------------------------------ PRIVATE ------------------------------
+
+// ------------------------------ PUBLIC ------------------------------
 
 /**
- * Create an result object with useful information
- * and return it.
+ * Create an result object.
  *
  * @returns {{}}
  */
-function toJSON() {
-    var json = {};
+Result.prototype.toJSON = function () {
+    var self = this,
+        json = {};
 
-    if (this.id && !this.error) {
-        json['id'] = this.id;
+    if (self.error) {
+        json['error'] = self.error;
+        return json;
+    }
 
-        if (this.registration_id) {
-            json['registration_id'] = this.registration_id;
-            json['old_registration_id'] = this.old_registration_id;
-        }
-    } else if (this.error && !this.id) {
-        json['error'] = this.error;
+    json['id'] = self.id;
+
+    if (self.registration_id) {
+        json['registration_id'] = self.registration_id;
+        json['old_registration_id'] = self.old_registration_id;
     }
 
     return json;
-}
+};
 
 /**
  * Set id.
  *
  * @param id
  */
-function setId(id) {
-    if (typeof id === 'string') {
-        this.id = id;
-    }
-}
+Result.prototype.setId = function (id) {
+    if (typeof id !== 'string') return false;
+    this.id = id;
+};
 
 /**
  * Set registration_id.
  *
  * @param id
  */
-function setRegistrationId(id) {
-    if (typeof id === 'string') {
-        this.registration_id = id;
-    }
-}
+Result.prototype.setRegistrationId = function (id) {
+    if (typeof id !== 'string') return false;
+    this.registration_id = id;
+};
 
 /**
  * Set error.
  *
  * @param error
  */
-function setError(error) {
-    if (typeof error === 'string') {
-        this.error = error;
-    }
-}
+Result.prototype.setError = function (error) {
+    if (typeof error !== 'string') return false;
+    this.error = error;
+};
 
 /**
- * Set ol_registration_id.
+ * Set old_registration_id.
  *
  * @param id
  */
-function setOldRegistrationId(id) {
-    if (typeof id === 'string') {
-        this.old_registration_id = id;
-    }
-}
+Result.prototype.setOldRegistrationId = function (id) {
+    if (typeof id !== 'string') return false;
+    this.old_registration_id = id;
+};
 
 module.exports = Result;

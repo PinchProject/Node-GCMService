@@ -10,127 +10,123 @@
 
 var util = require('util');
 
+var debug = require('debug')('gcm:multicast_result');
+
+/**
+ *
+ * @constructor
+ */
 function MulticastResult() {
-    this.multicast_id = null;
+    this.multicast_ids = null;
     this.success_length = 0;
     this.failures = {};
     this.failures_length = 0;
     this.canonical_ids = [];
     this.canonical_ids_length = 0;
+
+    debug(
+        'CONSTRUCTOR > instance initialized with : "multicast_ids"=%s, "success_length"=%s, "failures"=%s,' +
+            ' "failures_length"=%s, "canonical_ids"=%s, "canonical_ids_length"=%s,',
+        this.multicast_ids,
+        this.success_length,
+        JSON.stringify(this.failures),
+        this.failures_length,
+        JSON.stringify(this.canonical_ids),
+        this.canonical_ids_length
+    );
 }
 
-MulticastResult.prototype = {
-    setMulticastId: setMulticastId,
-    addMulticastId: addMulticastId,
-    setFailures: setFailures,
-    setCanonicalIds: setCanonicalIds,
-    addCanonicalIdObject: addCanonicalIdObject,
-    addFailureValueWithKey: addFailureValueWithKey,
-    toJSON: toJSON,
-    setSuccessLength: setSuccessLength,
-    addSuccessLength: addSuccessLength,
-    setFailuresLength: setFailuresLength,
-    addFailuresLength: addFailuresLength,
-    setCanonicalIdsLength: setCanonicalIdsLength,
-    addCanonicalIdsLength: addCanonicalIdsLength
+// ------------------------------ PRIVATE ------------------------------
+
+/**
+ * Increase failures length.
+ *
+ * @private
+ */
+MulticastResult.prototype._increaseFailuresLength = function () {
+    var self = this;
+    self.failures_length += 1;
+    debug('DEBUG > "failures_length" = %s', self.failures_length);
 };
 
 /**
- * Create a multicast result object with useful
- * information and return it.
+ * Increase canonical ids length.
+ *
+ * @private
+ */
+MulticastResult.prototype._increaseCanonicalLength = function () {
+    var self = this;
+    self.canonical_ids_length += 1;
+    debug('DEBUG > "canonical_ids_length" = %s', self.canonical_ids_length);
+};
+
+// ------------------------------ PUBLIC ------------------------------
+
+/**
+ * Create a multicast result object.
  *
  * @returns {{}}
  */
-function toJSON() {
-    var json = {};
+MulticastResult.prototype.toJSON = function () {
+    var self = this;
 
-    if (this.multicast_id) {
-        json['multicast_id'] = this.multicast_id;
+    if (!self.multicast_ids) return null;
 
-        json['success_length'] = this.success_length;
-        json['canonical_ids_length'] = this.canonical_ids_length;
-        json['failures_length'] = this.failures_length;
+    var json = {
+        multicast_ids: self.multicast_ids,
+        success_length: self.success_length,
+        canonical_ids_length: self.canonical_ids_length,
+        failures_length: self.failures_length
+    };
 
-        if (this.failures_length > 0) {
-            json['failures'] = this.failures;
-        }
+    if (self.failures_length > 0) json['failures'] = self.failures;
+    if (self.canonical_ids_length > 0) json['canonical_ids'] = self.canonical_ids;
 
-        if (this.canonical_ids_length > 0) {
-            json['canonical_ids'] = this.canonical_ids;
-        }
-    } else {
-        json = null;
-    }
+    debug('DEBUG > json : %s', JSON.stringify(json));
 
     return json;
-}
+};
 
 /**
- * Set multicast_id.
+ * Add new multicast id.
  *
  * @param id
  */
-function setMulticastId(id) {
-    if (typeof id === 'number') {
-        this.multicast_id = id;
+MulticastResult.prototype.addMulticastId = function (id) {
+    var self = this;
+
+    if (typeof id !== 'number') return false;
+
+    if (util.isArray(self.multicast_ids)) {
+        if (self.multicast_ids.indexOf(id) == -1) self.multicast_ids.push(id);
     }
-}
 
-/**
- * Add multicast_id.
- *
- * @param id
- */
-function addMulticastId(id) {
-    if (typeof id === 'number') {
-        if (!this.multicast_id) {
-            this.multicast_id = id;
-        } else if (typeof this.multicast_id === 'number') {
-            if (this.multicast_id != id) {
-                var tmp = this.multicast_id;
-
-                this.multicast_id = [tmp, id];
-            }
-        } else if (typeof this.multicast_id === 'object') {
-            if (this.multicast_id.indexOf(id) == -1) {
-                this.multicast_id.push(id);
-            }
+    if (typeof self.multicast_ids === 'number') {
+        if (self.multicast_ids != id) {
+            var tmp = self.multicast_ids;
+            self.multicast_ids = [tmp, id];
         }
     }
-}
+
+    if (!self.multicast_ids) self.multicast_ids = id;
+
+    debug('ADD > new multicast_id : %s', id);
+};
 
 /**
- * Set failures.
+ * Add new canonical id object.
  *
  * @param obj
  */
-function setFailures(obj) {
-    if (typeof obj === 'object' && !util.isArray(obj)) {
-        this.failures = obj;
-    }
-}
+MulticastResult.prototype.addCanonicalIdObject = function (obj) {
+    var self = this;
 
-/**
- * Set canonical_ids.
- *
- * @param obj
- */
-function setCanonicalIds(obj) {
-    if (util.isArray(obj)) {
-        this.canonical_ids = obj;
-    }
-}
+    if (typeof obj !== 'object') return false;
 
-/**
- * Add new canonical_id object.
- *
- * @param obj
- */
-function addCanonicalIdObject(obj) {
-    if (typeof obj === 'object' && !util.isArray(obj)) {
-        this.canonical_ids.push(obj);
-    }
-}
+    self.canonical_ids.push(obj);
+    debug('ADD > canonical id object : %s', JSON.stringify(obj));
+    self._increaseCanonicalLength();
+};
 
 /**
  * Add new value to the specified key.
@@ -138,80 +134,29 @@ function addCanonicalIdObject(obj) {
  * @param key
  * @param value
  */
-function addFailureValueWithKey(key, value) {
-    if (typeof value === 'string') {
-        if (!this.failures.hasOwnProperty(key)) {
-            this.failures[key] = [];
-        }
+MulticastResult.prototype.addFailureValueWithKey = function (key, value) {
+    var self = this;
 
-        this.failures[key].push(value);
-    }
-}
+    if (typeof key !== 'string' || typeof value !== 'string') return false;
+
+    if (!self.failures.hasOwnProperty(key)) self.failures[key] = [];
+
+    self.failures[key].push(value);
+    debug('ADD > "%s" to key "%s"', value, key);
+    self._increaseFailuresLength();
+
+};
 
 /**
  * Set success length.
  *
  * @param length
+ * @returns {boolean}
  */
-function setSuccessLength(length) {
-    if (typeof length === 'number') {
-        this.success_length = length;
-    }
-}
-
-/**
- * Increase success length.
- *
- * @param length
- */
-function addSuccessLength(length) {
-    if (typeof length === 'number') {
-        this.success_length += length;
-    }
-}
-
-/**
- * Set failures length.
- *
- * @param length
- */
-function setFailuresLength(length) {
-    if (typeof length === 'number') {
-        this.failures_length = length;
-    }
-}
-
-/**
- * Increase failures length.
- *
- * @param length
- */
-function addFailuresLength(length) {
-    if (typeof length === 'number') {
-        this.failures_length += length;
-    }
-}
-
-/**
- * Set canonical_ids length.
- *
- * @param length
- */
-function setCanonicalIdsLength(length) {
-    if (typeof length === 'number') {
-        this.canonical_ids_length = length;
-    }
-}
-
-/**
- * Increase canonical_ids length.
- *
- * @param length
- */
-function addCanonicalIdsLength(length) {
-    if (typeof length === 'number') {
-        this.canonical_ids_length += length;
-    }
-}
+MulticastResult.prototype.setSuccessLength = function (length) {
+    if (typeof length !== 'number') return false;
+    this.success_length = length;
+    debug('SET > "success_length" to %s', length);
+};
 
 module.exports = MulticastResult;
