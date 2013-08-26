@@ -177,6 +177,7 @@ Sender.prototype._send = function (message, registration_ids, retries, callback)
 };
 
 /**
+ * Send a request using application/x-www-form-urlencoded media type.
  *
  * @param options
  * @param attemptOptions
@@ -217,6 +218,7 @@ Sender.prototype._sendURLEncodedRequest = function (options, attemptOptions, mes
 };
 
 /**
+ * Send a request using application/json media type.
  *
  * @param options
  * @param attemptOptions
