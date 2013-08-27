@@ -17,7 +17,7 @@
         "attempt": "~1.0.0",
         "debug": "~0.7.2",
         "async": "~0.2.9",
-        "request": "~2.27.0"
+        "request": "2.25.0"
     },
     "main": "./libs/index",
     "directories": {
