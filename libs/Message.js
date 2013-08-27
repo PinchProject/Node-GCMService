@@ -20,20 +20,20 @@ var debug = require('debug')('gcm:message');
 function Message(obj) {
     this.collapse_key = null;
     this.data = {};
-    this.delay_while_idle = false;
-    this.time_to_live = 2419200;
+    this.delay_while_idle = null;
+    this.time_to_live = null;
     this.restricted_package_name = null;
-    this.dry_run = false;
+    this.dry_run = null;
 
     if (obj && typeof obj === 'object') {
         this.collapse_key = 'collapse_key' in obj && typeof obj.collapse_key === 'string' ? obj.collapse_key : null;
         this.data = 'data' in obj && typeof obj.data === 'object' && !util.isArray(obj.data) ? obj.data : {};
         this.delay_while_idle = 'delay_while_idle' in obj && typeof obj.delay_while_idle === 'boolean'
-            ? obj.delay_while_idle : false;
-        this.time_to_live = 'time_to_live' in obj && typeof obj.time_to_live === 'number' ? obj.time_to_live : 2419200;
+            ? obj.delay_while_idle : null;
+        this.time_to_live = 'time_to_live' in obj && typeof obj.time_to_live === 'number' ? obj.time_to_live : null;
         this.restricted_package_name = 'restricted_package_name' in obj &&
             typeof obj.restricted_package_name === 'string' ? obj.restricted_package_name : null;
-        this.dry_run = 'dry_run' in obj && typeof obj.dry_run === 'boolean' ? obj.dry_run : false;
+        this.dry_run = 'dry_run' in obj && typeof obj.dry_run === 'boolean' ? obj.dry_run : null;
     }
 
     debug(
@@ -94,7 +94,7 @@ Message.prototype._dataIsValid = function () {
  */
 Message.prototype._timeToLiveIsValid = function () {
     var self = this;
-    return typeof self.time_to_live === 'number' && self.time_to_live > 0 && self.time_to_live <= 2419200
+    return !self.time_to_live || (typeof self.time_to_live === 'number' && self.time_to_live > 0 && self.time_to_live <= 2419200)
 };
 
 // ------------------------------ PUBLIC ------------------------------
@@ -111,13 +111,12 @@ Message.prototype.toJSON = function () {
 
     if (!self._timeToLiveIsValid() || !self._dataIsValid()) return null;
 
-    var json = {
-        data: self.data,
-        delay_while_idle: self.delay_while_idle,
-        time_to_live: self.time_to_live,
-        dry_run: self.dry_run
-    };
+    var json = {};
 
+    if (self.data && Object.keys(self.data).length > 0) json['data'] = self.data;
+    if (self.dry_run) json['dry_run'] = self.dry_run;
+    if (self.time_to_live) json['time_to_live'] = self.time_to_live;
+    if (self.delay_while_idle) json['delay_while_idle'] = self.delay_while_idle;
     if (self.collapse_key) json['collapse_key'] = self.collapse_key;
     if (self.restricted_package_name) json['restricted_package_name'] = self.restricted_package_name;
 
@@ -139,10 +138,10 @@ Message.prototype.toString = function () {
     if (!self._timeToLiveIsValid() || !self._dataIsValid()) return null;
 
     var string = self._dataToString();
-    string += '&time_to_live=' + self.time_to_live;
-    string += '&dry_run=' + self.dry_run;
-    string += '&delay_while_idle=' + self.delay_while_idle;
 
+    if (self.delay_while_idle) string += '&delay_while_idle=' + self.delay_while_idle;
+    if (self.dry_run) string += '&dry_run=' + self.dry_run;
+    if (self.time_to_live) string += '&time_to_live=' + self.time_to_live;
     if (self.collapse_key) string += '&collapse_key=' + self.collapse_key;
     if (self.restricted_package_name) string += '&restricted_package_name=' + self.restricted_package_name;
 

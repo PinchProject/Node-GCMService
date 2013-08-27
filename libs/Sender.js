@@ -117,7 +117,7 @@ Sender.prototype._createBatchArrays = function (registration_ids, callback) {
  * @private
  */
 Sender.prototype._sendRequest = function (options, callback) {
-    request(
+    request.post(
         options,
         function (err, res, body) {
             if (err) return callback(err);
@@ -129,7 +129,9 @@ Sender.prototype._sendRequest = function (options, callback) {
                     callback(null, body);
                     break;
                 case 400:
-                    callback(new Error('BAD_REQUEST : Request could not be parsed as JSON, or it contained invalid fields'));
+                    var error = new Error('BAD_REQUEST : Request could not be parsed as JSON, or it contained invalid fields');
+                    error.details = body;
+                    callback(error);
                     break;
                 case 401:
                     callback(new Error('UNAUTHORIZED : There was an error authenticating the sender account'));
@@ -190,7 +192,7 @@ Sender.prototype._send = function (message, registration_ids, retries, callback)
 Sender.prototype._sendURLEncodedRequest = function (options, attemptOptions, message, registration_ids, callback) {
     var self = this;
 
-    options['headers']['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+    options['headers']['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
     options['headers']['Content-length'] = Buffer.byteLength(message, 'utf8');
 
     if (typeof registration_ids !== 'string' || !util.isArray(registration_ids) || registration_ids.length != 1)
@@ -231,8 +233,7 @@ Sender.prototype._sendURLEncodedRequest = function (options, attemptOptions, mes
 Sender.prototype._sendJSONRequest = function (options, attemptOptions, message, registration_ids, callback) {
     var self = this;
 
-    options['body'] = JSON.stringify(message);
-    options['headers']['Content-Type'] = 'application/json';
+    options['headers']['Content-Type'] = 'application/json; charset=utf-8';
     options['headers']['Content-length'] = Buffer.byteLength(JSON.stringify(message), 'utf8');
 
     if (!util.isArray(registration_ids)) return callback(new Error('registration_ids must be an array'));
@@ -243,8 +244,9 @@ Sender.prototype._sendJSONRequest = function (options, attemptOptions, message, 
         registration_ids,
         function (array, callback) {
             message['registration_ids'] = array;
-
             options['body'] = JSON.stringify(message);
+
+            debug('HTTP OPTIONS > %s', JSON.stringify(options));
 
             attempt(
                 function (attempts) {
@@ -300,8 +302,7 @@ Sender.prototype._sendWithRetry = function (message, registration_ids, callback)
     var self = this;
 
     var options = {
-            url: self.gcmEndpoint + self.gcmEndPath,
-            method: 'POST',
+            uri: self.gcmEndpoint + self.gcmEndPath,
             headers: {
                 Authorization: 'key=' + self.apiKey
             }
@@ -339,14 +340,13 @@ Sender.prototype._sendWithoutRetry = function (message, registration_ids, callba
     var self = this;
 
     var options = {
-            url: self.gcmEndpoint + self.gcmEndPath,
-            method: 'POST',
+            uri: self.gcmEndpoint + self.gcmEndPath,
             headers: {
                 Authorization: 'key=' + self.apiKey
             }
         },
         attemptOptions = {
-            retries:0
+            retries: 0
         };
 
     debug('DEBUG > HTTP request options : %s', JSON.stringify(options));

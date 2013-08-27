@@ -220,8 +220,10 @@ This module was written based on [node-gcm](https://github.com/ToothlessGear/nod
 
 ## Change log
 
-#### v0.2.5
+#### v0.2.6
 
+* using `request` module v2.25.0 to avoid parsing error
+* add `details` attribute on Error object when Google GCM server respond with `400: BAD_REQUEST`
 * code refactoring
 * update modules
 * update documentation
