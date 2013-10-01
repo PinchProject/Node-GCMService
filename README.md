@@ -220,6 +220,10 @@ This module was written based on [node-gcm](https://github.com/ToothlessGear/nod
 
 ## Change log
 
+#### v0.2.7
+
+* fix bug when including module (ignoring all files named `index.js` is not a good idea)
+
 #### v0.2.6
 
 * using `request` module v2.25.0 to avoid parsing error
