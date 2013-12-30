@@ -101,6 +101,9 @@ Sender.prototype._createResult = function (registration_id, data) {
 Sender.prototype._createBatchArrays = function (registration_ids, callback) {
     var array = [];
 
+    if (registration_ids.length <= 1000)
+        return callback(registration_ids);
+
     while (registration_ids.length) {
         array.push(registration_ids.splice(0, 1000));
     }
@@ -195,8 +198,14 @@ Sender.prototype._sendURLEncodedRequest = function (options, attemptOptions, mes
     options['headers']['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
     options['headers']['Content-length'] = Buffer.byteLength(message, 'utf8');
 
-    if (typeof registration_ids !== 'string' || !util.isArray(registration_ids) || registration_ids.length != 1)
-        return callback(new Error('registration_ids must be a string or an array of 1 element'));
+    debug('DEBUG > typeof registration_ids: %s', typeof registration_ids);
+    debug('DEBUG > registration_ids: %s', JSON.stringify(registration_ids));
+
+    if (util.isArray(registration_ids) && registration_ids.length < 1)
+        return callback(new Error('registration_ids must be an array of 1 or more elements'));
+
+    if (typeof registration_ids !== 'string' && !util.isArray(registration_ids))
+        return callback(new Error('registration_ids must be a string or an array of 1 or more elements'));
 
     var registration_id = registration_ids;
 
