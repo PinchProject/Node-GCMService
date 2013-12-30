@@ -1,6 +1,8 @@
-# Node-GCMService [![NPM version](https://badge.fury.io/js/node-gcm-service.png)](http://badge.fury.io/js/node-gcm-service)
+# Node-GCMService
 
 [![NPM](https://nodei.co/npm/node-gcm-service.png?downloads=true&stars=true)](https://nodei.co/npm/node-gcm-service/)
+
+[![NPM](https://nodei.co/npm-dl/node-gcm-service.png?months=1)](https://nodei.co/npm/node-gcm-service/)
 
 ## Description
 
@@ -57,7 +59,6 @@ message.setDelayWhileIdle(true);
 
 ```javascript
 var message = new gcm.Message({
-	registration_ids: ['id1'],
 	collapse_key: 'test',
 	data: {
 		key1: 'value1'
@@ -220,9 +221,15 @@ This module was written based on [node-gcm](https://github.com/ToothlessGear/nod
 
 ## Change log
 
+<<<<<<< HEAD
 #### v0.2.7
 
 * fix bug when including module (ignoring all files named `index.js` is not a good idea)
+=======
+#### v0.2.8
+
+* fix a bug with an `if` statement condition
+>>>>>>> release/v0.2.8
 
 #### v0.2.6
 
